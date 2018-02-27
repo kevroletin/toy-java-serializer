@@ -319,4 +319,37 @@ public class SerializerTest {
         
         Serializer.serializeInner(list);
     }
+    
+    @org.junit.Test(expected = RuntimeException.class)
+    public void testSerializeToJsonInteger() throws Exception {
+        Serializer.serialize(1);
+    }
+
+    @org.junit.Test(expected = RuntimeException.class)
+    public void testSerializeToJsonChar() throws Exception {
+        Serializer.serialize('a');
+    }    
+
+    @org.junit.Test(expected = RuntimeException.class)
+    public void testSerializeToJsonList() throws Exception {
+        Serializer.serialize(Arrays.asList(1, 2, 3));
+    }
+
+    @org.junit.Test(expected = RuntimeException.class)
+    public void testSerializeToJsonArray() throws Exception {
+        int[] arr = {1, 2, 3};
+        Serializer.serialize(arr);
+    }
+ 
+    @org.junit.Test
+    public void testSerializeToJsonObject() throws Exception {
+        Map<String, INode> m = new HashMap<>();
+        m.put("x", new ScalarNode(1.0));
+        m.put("y", new ScalarNode(2.0));
+        assertEquals(
+            new ObjectNode(m),
+            Serializer.serialize(new Point(1.0, 2.0))
+        );
+    }    
+    
 }

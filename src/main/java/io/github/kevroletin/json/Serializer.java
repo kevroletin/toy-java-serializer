@@ -13,9 +13,11 @@ import java.util.Set;
 
 public class Serializer {
 	
-	// TODO: detect cyclic references and fail
-    static public INode serialize(Object x) {
-        return null;
+    static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
+        if (TypeUtils.isScalar(x) || TypeUtils.isArray(x) || TypeUtils.isList(x)) {
+            throw new RuntimeException("Only objects can be serialized to Json");
+        }
+        return serializeInner(x);
     }
 
     static public INode serializeArray(Object x) throws IllegalArgumentException, IllegalAccessException {
