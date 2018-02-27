@@ -11,12 +11,12 @@ public class ArrayNode implements INode {
         assert(childs != null);
         this.childs = childs;
     }
-    
+
     @Override
-    public boolean isArray() { 
-        return true; 
+    public boolean isArray() {
+        return true;
     }
-    
+
     @Override
     public Object unsafeGet() {
         return childs;

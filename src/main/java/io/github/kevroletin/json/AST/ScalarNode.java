@@ -1,20 +1,17 @@
 package io.github.kevroletin.json.AST;
 
-import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 import java.util.Objects;
+import io.github.kevroletin.json.TypeUtils;
 
 public class ScalarNode implements INode {
     Object child;
 
     public ScalarNode(@Nullable Object child) {
-        assert(child != null);
+        assert(TypeUtils.isPrimitive(child));
         this.child = child;
-        
-        assert(isNull() || isDouble() || isInteger()
-               || isString() || isBoolean());
     }
-    
+
     @Override
     public boolean isPrimitive() {
         return true;
@@ -22,27 +19,27 @@ public class ScalarNode implements INode {
 
     @Override
     public boolean isNull() {
-        return child == null;
+        return TypeUtils.isNull(child);
     }
 
     @Override
     public boolean isDouble() {
-        return child instanceof Double;
+        return TypeUtils.isDouble(child);
     }
 
     @Override
     public boolean isInteger() {
-        return child instanceof Integer;
+        return TypeUtils.isInteger(child);
     }
 
     @Override
     public boolean isString() {
-        return child instanceof String;
-    }    
-    
+        return TypeUtils.isString(child);
+    }
+
     @Override
     public boolean isBoolean() {
-        return child instanceof Boolean;
+        return TypeUtils.isBoolean(child);
     }
 
     @Override
