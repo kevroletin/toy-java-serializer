@@ -47,20 +47,31 @@ public class Serializer {
         HashMap<String, INode> map = new HashMap();
         for (Field f: fields) {
             String name = f.getName();
-            //if (name != "this") {
-            f.setAccessible(true); // to access private fields
-            // TODO: check annotations to skip or validate fields
-            INode value = serializeInner(f.get(x));
-            map.put(name, value);
-            //}
+            if (!isSpecialFieldName(name)) {
+                f.setAccessible(true); // to access private fields
+                // TODO: check annotations to skip or validate fields
+                INode value = serializeInner(f.get(x));
+                map.put(name, value);
+            }
         }
         return new ObjectNode(map);
     }
 
+    private static void throwUnsupportedClass(Class<?> cls) {
+        throw new RuntimeException(
+            String.format("Serialization of class %s is not supported", cls.getName()));
+    }
+
+    private static boolean isSpecialFieldName(String x) {
+        return x.equals("this") || x.startsWith("this$");
+    }
+
     static public INode serializeInner(Object x) throws IllegalArgumentException, IllegalAccessException {
-	    // TODO: find serializers using annotations
-	    
-        if (TypeUtils.isPrimitive(x)) {
+        // TODO: find serializers using annotations
+        if (TypeUtils.isUnsupportedScalar(x)) {
+            throwUnsupportedClass(x.getClass());
+        }
+        if (TypeUtils.isSupportedScalar(x)) {	    
             return new ScalarNode(x);
         }
         if (TypeUtils.isArray(x)) {

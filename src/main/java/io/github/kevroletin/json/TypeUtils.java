@@ -6,9 +6,37 @@ import java.util.Collections;
 import java.util.List;
 
 public class TypeUtils {
-    static public boolean isPrimitive(Object x) {
-        return isNull(x) || isDouble(x) || isInteger(x) || isString(x)
+    static public boolean isScalar(Object x) {
+        return isSupportedScalar(x) || isUnsupportedScalar(x);
+    }
+    
+    static public boolean isSupportedScalar(Object x) {
+        return isNull(x) 
+            || isDouble(x) 
+            || isInteger(x) 
+            || isString(x)
             || isBoolean(x);
+    }
+    
+    static public boolean isUnsupportedScalar(Object x) {
+        return x instanceof Float
+            || x instanceof Short
+            || x instanceof Long
+            || x instanceof Byte
+            || x instanceof Character;
+    }
+    
+    static public boolean isUnsupportedScalar(Class<?> cls) {
+        return cls == float.class
+            || cls == Float.class
+            || cls == short.class
+            || cls == Short.class
+            || cls == long.class
+            || cls == Long.class
+            || cls == byte.class
+            || cls == Byte.class
+            || cls == char.class
+            || cls == Character.class;
     }
 
     static public boolean isNull(Object x) {

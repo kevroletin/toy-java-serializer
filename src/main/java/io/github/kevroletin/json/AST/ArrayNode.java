@@ -1,13 +1,13 @@
 package io.github.kevroletin.json.AST;
 
-import com.sun.istack.internal.NotNull;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class ArrayNode implements INode {
-    ArrayList<INode> childs;
+    List<INode> childs;
 
-    public ArrayNode(@NotNull ArrayList<INode> childs) {
+    public ArrayNode(List<INode> childs) {
         assert(childs != null);
         this.childs = childs;
     }

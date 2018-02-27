@@ -1,13 +1,12 @@
 package io.github.kevroletin.json.AST;
 
-import com.sun.istack.internal.NotNull;
 import java.util.Map;
 import java.util.Objects;
 
 public class ObjectNode implements INode {
     Map<String, INode> childs;
 
-    public ObjectNode(@NotNull Map<String, INode> childs) {
+    public ObjectNode(Map<String, INode> childs) {
         assert(childs != null);
         this.childs = childs;
     }

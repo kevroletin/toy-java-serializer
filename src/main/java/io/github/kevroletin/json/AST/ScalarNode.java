@@ -1,14 +1,13 @@
 package io.github.kevroletin.json.AST;
 
-import com.sun.istack.internal.Nullable;
 import java.util.Objects;
 import io.github.kevroletin.json.TypeUtils;
 
 public class ScalarNode implements INode {
     Object child;
 
-    public ScalarNode(@Nullable Object child) {
-        assert(TypeUtils.isPrimitive(child));
+    public ScalarNode(Object child) {
+        assert(TypeUtils.isSupportedScalar(child));
         this.child = child;
     }
 
@@ -49,7 +48,7 @@ public class ScalarNode implements INode {
 
     @Override
     public String toString() {
-        return "PrimitiveNode{" + "child=" + child + '}';
+        return "ScalarNode{" + "child=" + child + '}';
     }
 
     @Override
