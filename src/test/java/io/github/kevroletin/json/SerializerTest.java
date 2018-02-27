@@ -317,6 +317,6 @@ public class SerializerTest {
         Cons<Integer> list = new Cons<Integer>(1, lastNode);
         lastNode.next = list;
         
-        Serializer.serialize(list);
+        Serializer.serializeInner(list);
     }
 }
