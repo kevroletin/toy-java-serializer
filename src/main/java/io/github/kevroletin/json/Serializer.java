@@ -65,10 +65,10 @@ public class Serializer {
     
     static public INode serializeObject(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
         markAsVisited(x, visited);
-        
+
         List<Field> fields = TypeUtils.getAllFields(x.getClass());
 
-        HashMap<String, INode> map = new HashMap();
+        HashMap<String, INode> map = new HashMap<>();
         for (Field f: fields) {
             String name = f.getName();
             if (!isSpecialFieldName(name)) {
@@ -78,7 +78,7 @@ public class Serializer {
                 map.put(name, value);
             }
         }
-        
+
         clearVisited(x, visited);
         return new ObjectNode(map);
     }
@@ -87,11 +87,11 @@ public class Serializer {
         throw new RuntimeException(
             String.format("Serialization of class %s is not supported", cls.getName()));
     }
-  
+
     static public INode serializeInner(Object x) throws IllegalArgumentException, IllegalAccessException {
         return serializeInner(x, newIdentetySet());
     }
-    
+
     static public INode serializeInner(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
 	    // TODO: find serializers using annotations
 	    if (TypeUtils.isUnsupportedScalar(x)) {
@@ -112,19 +112,19 @@ public class Serializer {
     private static boolean isSpecialFieldName(String x) {
         return x.equals("this") || x.startsWith("this$");
     }
-    
-    private static void markAsVisited(Object x, Set visited) {
+
+    private static void markAsVisited(Object x, Set<Object> visited) {
         if (visited.contains(x)) {
             // TODO: improve error message
             throw new RuntimeException("Circular dependency");
         }
         visited.add(x);
     }
-    
+
     private static void clearVisited(Object x, Set visited) {
         visited.remove(x);
     }
-    
+
     // creates set which compares elevemnt by reference instead of .equals method
     private static Set newIdentetySet() {
         IdentityHashMap<Object, Boolean> c = new IdentityHashMap();

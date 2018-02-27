@@ -24,5 +24,5 @@ public interface INode {
     
     default boolean isNull() { return false; }
    
-    Object unsafeGet();
+    Object getUnsafe();
 }

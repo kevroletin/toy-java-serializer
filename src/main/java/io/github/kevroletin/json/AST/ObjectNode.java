@@ -10,6 +10,10 @@ public class ObjectNode implements INode {
         assert(childs != null);
         this.childs = childs;
     }
+
+    public Map<String, INode> get() {
+        return childs;
+    }
     
     @Override
     public boolean isObject() {
@@ -17,7 +21,7 @@ public class ObjectNode implements INode {
     }
 
     @Override
-    public Object unsafeGet() {
+    public Object getUnsafe() {
         return childs;
     }
 

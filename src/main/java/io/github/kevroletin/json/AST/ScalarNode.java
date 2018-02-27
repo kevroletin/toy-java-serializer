@@ -42,7 +42,7 @@ public class ScalarNode implements INode {
     }
 
     @Override
-    public Object unsafeGet() {
+    public Object getUnsafe() {
         return child;
     }
 

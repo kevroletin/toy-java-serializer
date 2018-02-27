@@ -4,6 +4,9 @@ import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
 import io.github.kevroletin.json.AST.ScalarNode;
+import io.github.kevroletin.json.TestTypes.Cons;
+import io.github.kevroletin.json.TestTypes.Point;
+import io.github.kevroletin.json.TestTypes.GenericWrapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -128,93 +131,6 @@ public class SerializerTest {
         List<Character> unsupportedArr = Arrays.asList('h', 'e', 'l', 'l', 'o');
         Serializer.serializeList(unsupportedArr);
     }   
-
-    class Point {
-        public Double x, y;
-
-        public Point(Double x, Double y) {
-            this.x = x;
-            this.y = y;
-        }
-
-        public Point() {}
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 79 * hash + Objects.hashCode(this.x);
-            hash = 79 * hash + Objects.hashCode(this.y);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Point other = (Point) obj;
-            if (!Objects.equals(this.x, other.x)) {
-                return false;
-            }
-            if (!Objects.equals(this.y, other.y)) {
-                return false;
-            }
-            return true;
-        }
-    }
-    
-    public static class Cons<T> {
-        public Cons next;
-        
-        public T value;
-
-        public Cons(T value, Cons<T> next) {
-            this.next = next;
-            this.value = value;
-        }
-        
-        public Cons() {}
-
-        @Override
-        public String toString() {
-            return "Cons{" + "next=" + next + ", value=" + value + '}';
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 59 * hash + Objects.hashCode(this.next);
-            hash = 59 * hash + Objects.hashCode(this.value);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Cons<?> other = (Cons<?>) obj;
-            if (!Objects.equals(this.next, other.next)) {
-                return false;
-            }
-            if (!Objects.equals(this.value, other.value)) {
-                return false;
-            }
-            return true;
-        }
-    }
     
     @Test
     public void testSerializeObjectPoint() throws Exception {
@@ -260,47 +176,9 @@ public class SerializerTest {
         );
     }
 
-    static class Wrapper<T> {
-        private T value;
-
-        public Wrapper(T value) {
-            this.value = value;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 61 * hash + Objects.hashCode(this.value);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Wrapper<?> other = (Wrapper<?>) obj;
-            if (!Objects.equals(this.value, other.value)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "Wrapper{" + "value=" + value + '}';
-        }
-    }
-
     @Test
     public void testSerializeObjectPrivateField() throws Exception {
-        Wrapper<String> val = new Wrapper("Secret");
+        GenericWrapper<String> val = new GenericWrapper("Secret");
         
         Map<String, INode> m = new HashMap<>();
         m.put("value", new ScalarNode("Secret"));

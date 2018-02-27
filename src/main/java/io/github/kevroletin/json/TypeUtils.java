@@ -1,13 +1,20 @@
 package io.github.kevroletin.json;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class TypeUtils {
     static public boolean isScalar(Object x) {
         return isSupportedScalar(x) || isUnsupportedScalar(x);
+    }
+
+    static public boolean isScalarClass(Class<?> cls) {
+        return isSupportedScalarClass(cls) || isUnsupportedScalarClass(cls);
     }
     
     static public boolean isSupportedScalar(Object x) {
@@ -16,6 +23,13 @@ public class TypeUtils {
             || isInteger(x) 
             || isString(x)
             || isBoolean(x);
+    }
+
+    static public boolean isSupportedScalarClass(Class<?> cls) {
+        return cls == Double.class
+            || cls == Integer.class
+            || cls == String.class
+            || cls == Boolean.class;
     }
     
     static public boolean isUnsupportedScalar(Object x) {
@@ -26,16 +40,15 @@ public class TypeUtils {
             || x instanceof Character;
     }
     
-    static public boolean isUnsupportedScalar(Class<?> cls) {
-        return cls == float.class
-            || cls == Float.class
-            || cls == short.class
+    static public boolean isUnsupportedScalarClass(Class<?> cls) {
+        // We don't support fields which are not nullable for simplicity
+        if (cls.isPrimitive()) {
+            return false;
+        }
+        return cls == Float.class
             || cls == Short.class
-            || cls == long.class
             || cls == Long.class
-            || cls == byte.class
             || cls == Byte.class
-            || cls == char.class
             || cls == Character.class;
     }
 
@@ -62,15 +75,24 @@ public class TypeUtils {
     static public boolean isArray(Object x) {
         return x.getClass().isArray();
     }
+
+    static public boolean isArrayClass(Class<?> cls) {
+        return cls.isArray();
+    }
     
     static public boolean isList(Object x) {
-	return x instanceof List;
+    	return x instanceof List;
     }
+    
+    static public boolean isListClass(Class<?> cls) {
+    	return cls.isInstance(List.class);
+    }
+    
 
     /** Due to inheritance we need to recursively scan super classes to find all
      * fields
      */
-    static List<Field> getAllFields(Class<?> cls) {
+    public static List<Field> getAllFields(Class<?> cls) {
         Field[] currentFields = cls.getDeclaredFields();
         if (currentFields == null || currentFields.length == 0) {
             return new ArrayList<>(0);
@@ -85,5 +107,24 @@ public class TypeUtils {
         }
 
         return allFields;
+    }
+    
+    /** This approach works better that class.newInstance because here we can
+     * call ctor.setAccessible(true) which prevents some access violation errors.
+     */
+    public static Constructor<?> getDefaultConstructor(Class<?> cls) {
+        Optional<Constructor<?>> ctor = 
+            Arrays.stream(cls.getDeclaredConstructors())
+            .filter((x) -> {
+                return x.getParameterTypes() == null
+                       || x.getParameterTypes().length == 0;
+            })
+            .findFirst();
+        if (!ctor.isPresent()) {
+            throw new IllegalStateException(cls.getName() + " have no default constructor");
+        }
+        Constructor<?> res = ctor.get();
+        res.setAccessible(true);
+        return ctor.get();
     }
 }
