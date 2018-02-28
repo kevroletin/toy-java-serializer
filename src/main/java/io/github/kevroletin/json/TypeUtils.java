@@ -80,15 +80,6 @@ public class TypeUtils {
         return cls.isArray();
     }
     
-    static public boolean isList(Object x) {
-        return x instanceof List;
-    }
-    
-    static public boolean isListClass(Class<?> cls) {
-        return cls.isInstance(List.class);
-    }
-    
-
     /** Due to inheritance we need to recursively scan super classes to find all
      * fields
      */

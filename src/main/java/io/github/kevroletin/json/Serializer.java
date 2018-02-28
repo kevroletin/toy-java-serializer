@@ -14,7 +14,7 @@ import java.util.Set;
 public class Serializer {
     
     static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
-        if (TypeUtils.isScalar(x) || TypeUtils.isArray(x) || TypeUtils.isList(x)) {
+        if (TypeUtils.isScalar(x) || TypeUtils.isArray(x)) {
             throw new RuntimeException("Only objects can be serialized to Json");
         }
         return serializeInner(x);
@@ -32,26 +32,6 @@ public class Serializer {
 
         for (int i = 0; i < Array.getLength(x); i++) {
             Object value = Array.get(x, i);
-            res.add(serializeInner(value, visited));
-        }
-
-        clearVisited(x, visited);
-        return new ArrayNode(res);
-    }
-
-    static public INode serializeList(Object x) throws IllegalArgumentException, IllegalAccessException {
-        return serializeList(x, newIdentetySet());
-    }
-    
-    static public INode serializeList(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
-        assert(TypeUtils.isList(x));
-        markAsVisited(x, visited);
-        
-        List list = (List)x;
-        ArrayList<INode> res = new ArrayList<>();
-
-        for (int i = 0; i < list.size(); i++) {
-            Object value = list.get(i);
             res.add(serializeInner(value, visited));
         }
 
@@ -102,10 +82,6 @@ public class Serializer {
         }
         if (TypeUtils.isArray(x)) {
             return serializeArray(x, visited);
-        }
-        if (TypeUtils.isList(x)) {
-            // TODO: drop me
-            return serializeList(x, visited);
         }
         return serializeObject(x, visited);
     }
