@@ -104,6 +104,7 @@ public class Serializer {
             return serializeArray(x, visited);
         }
         if (TypeUtils.isList(x)) {
+            // TODO: drop me
             return serializeList(x, visited);
         }
         return serializeObject(x, visited);

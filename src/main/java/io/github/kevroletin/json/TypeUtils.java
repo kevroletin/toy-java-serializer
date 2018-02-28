@@ -43,7 +43,7 @@ public class TypeUtils {
     static public boolean isUnsupportedScalarClass(Class<?> cls) {
         // We don't support fields which are not nullable for simplicity
         if (cls.isPrimitive()) {
-            return false;
+            return true;
         }
         return cls == Float.class
             || cls == Short.class

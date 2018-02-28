@@ -1,9 +1,20 @@
 package io.github.kevroletin.json.TestTypes;
 
+import io.github.kevroletin.json.AST.INode;
+import io.github.kevroletin.json.AST.ObjectNode;
+import io.github.kevroletin.json.AST.ScalarNode;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class StringWrapper {
     public String value;
+
+    public static INode astNode(String value) {
+        Map<String, INode> m = new HashMap();
+        m.put("value", new ScalarNode(value));
+        return new ObjectNode(m);
+    }
 
     public StringWrapper(String value) {
         this.value = value;

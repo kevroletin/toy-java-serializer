@@ -12,6 +12,10 @@ public class ArrayNode implements INode {
         this.childs = childs;
     }
 
+    public List<INode> get(){
+        return childs;
+    }
+
     @Override
     public boolean isArray() {
         return true;
