@@ -14,7 +14,7 @@ public class ObjectNode implements INode {
     public Map<String, INode> get() {
         return childs;
     }
-    
+
     @Override
     public boolean isObject() {
         return true;

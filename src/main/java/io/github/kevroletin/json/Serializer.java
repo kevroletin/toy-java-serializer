@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Serializer {
-	
+    
     static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
         if (TypeUtils.isScalar(x) || TypeUtils.isArray(x) || TypeUtils.isList(x)) {
             throw new RuntimeException("Only objects can be serialized to Json");
@@ -27,7 +27,7 @@ public class Serializer {
     static public INode serializeArray(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
         assert(TypeUtils.isArray(x));
         markAsVisited(x, visited);
-	    
+        
         ArrayList<INode> res = new ArrayList<>();
 
         for (int i = 0; i < Array.getLength(x); i++) {
@@ -44,9 +44,9 @@ public class Serializer {
     }
     
     static public INode serializeList(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
-	    assert(TypeUtils.isList(x));
+        assert(TypeUtils.isList(x));
         markAsVisited(x, visited);
-	    
+        
         List list = (List)x;
         ArrayList<INode> res = new ArrayList<>();
 
@@ -93,8 +93,8 @@ public class Serializer {
     }
 
     static public INode serializeInner(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
-	    // TODO: find serializers using annotations
-	    if (TypeUtils.isUnsupportedScalar(x)) {
+        // TODO: find serializers using annotations
+        if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());
         }
         if (TypeUtils.isSupportedScalar(x)) {

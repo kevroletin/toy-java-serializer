@@ -19,7 +19,7 @@ public class Deserializer {
                 "Public default constructor is not implemented or not accesable.",
                 cls.getName());
             throw new RuntimeException(msg, e);
-        }   
+        }
     }
     
     private static Map<String, INode> ensureNodeIsObject(INode ast) {
@@ -44,14 +44,14 @@ public class Deserializer {
         if (value.isNull()) {
             return null;
         } else {
-			assert(TypeUtils.isSupportedScalarClass(cls));
+            assert(TypeUtils.isSupportedScalarClass(cls));
             Object res = value.getUnsafe();
             if (!res.getClass().equals(cls)) {
                 throw new RuntimeException(
                     String.format("Failed to deserialize scalar: expected %s but got %s",
-                        cls.getName(), res.getClass().getName()));
+                                  cls.getName(), res.getClass().getName()));
             }
-			return res;
+            return res;
         }
     }
 
@@ -69,15 +69,15 @@ public class Deserializer {
             } catch (IllegalArgumentException e) {
                 throw new RuntimeException(
                     String.format("Failed to set array element #%d. Expected type %s but got %s",
-                        i,
-                        elemCls.getName(),
-                        val.getClass().getName()));
+                                  i,
+                                  elemCls.getName(),
+                                  val.getClass().getName()));
             }
         }
 
         return res;
     }
-	
+    
     public static Object deserializeObject(INode ast, Class<?> objCls) {
         Object resObj = createEmptyInstance(objCls);
         Map<String, INode> allValues = ensureNodeIsObject(ast);
@@ -97,8 +97,8 @@ public class Deserializer {
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(
                     String.format("Failed to set %s field to value of type %s",
-                    field.getName(),
-                    value.getClass().getName()));
+                                  field.getName(),
+                                  value.getClass().getName()));
             }
         }
 
@@ -106,8 +106,8 @@ public class Deserializer {
     }
 
     private static Object deserializeWoTypecast(INode ir, Class<?> cls) {
-	    // TODO: find deserializers using annotations
-	    if (TypeUtils.isUnsupportedScalarClass(cls)) {
+        // TODO: find deserializers using annotations
+        if (TypeUtils.isUnsupportedScalarClass(cls)) {
             throwUnsupportedClass(cls);
         }
         if (TypeUtils.isSupportedScalarClass(cls)) {

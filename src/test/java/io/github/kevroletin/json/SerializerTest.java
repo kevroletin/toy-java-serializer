@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class SerializerTest {
-	
+    
     @org.junit.Test
     public void testSerializeArray() throws Exception {
         String[] strArr = {"hello", "world"};
@@ -27,7 +27,7 @@ public class SerializerTest {
                               new ScalarNode("hello"),
                               new ScalarNode("world")))
             );
-		
+        
         int[] intArr = {1, 2, 3};
         assertEquals(
             Serializer.serializeArray(intArr),
@@ -36,7 +36,7 @@ public class SerializerTest {
                               new ScalarNode(2),
                               new ScalarNode(3)))
             );
-		
+        
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
             Serializer.serializeArray(doubleArr),

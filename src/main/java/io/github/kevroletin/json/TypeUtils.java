@@ -18,9 +18,9 @@ public class TypeUtils {
     }
     
     static public boolean isSupportedScalar(Object x) {
-        return isNull(x) 
-            || isDouble(x) 
-            || isInteger(x) 
+        return isNull(x)
+            || isDouble(x)
+            || isInteger(x)
             || isString(x)
             || isBoolean(x);
     }
@@ -81,11 +81,11 @@ public class TypeUtils {
     }
     
     static public boolean isList(Object x) {
-    	return x instanceof List;
+        return x instanceof List;
     }
     
     static public boolean isListClass(Class<?> cls) {
-    	return cls.isInstance(List.class);
+        return cls.isInstance(List.class);
     }
     
 
@@ -113,12 +113,12 @@ public class TypeUtils {
      * call ctor.setAccessible(true) which prevents some access violation errors.
      */
     public static Constructor<?> getDefaultConstructor(Class<?> cls) {
-        Optional<Constructor<?>> ctor = 
+        Optional<Constructor<?>> ctor =
             Arrays.stream(cls.getDeclaredConstructors())
             .filter((x) -> {
-                return x.getParameterTypes() == null
-                       || x.getParameterTypes().length == 0;
-            })
+                    return x.getParameterTypes() == null
+                    || x.getParameterTypes().length == 0;
+                })
             .findFirst();
         if (!ctor.isPresent()) {
             throw new IllegalStateException(cls.getName() + " have no default constructor");
