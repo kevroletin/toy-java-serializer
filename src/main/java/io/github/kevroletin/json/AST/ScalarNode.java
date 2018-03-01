@@ -81,6 +81,8 @@ public class ScalarNode implements INode {
     public void toJson(StringBuffer res) {
         if (isString()) {
             res.append(PrintingUtils.escapeString((String)child));
+        } else if (isNull()) {
+            res.append("null");
         } else {
             res.append(child.toString());
         }

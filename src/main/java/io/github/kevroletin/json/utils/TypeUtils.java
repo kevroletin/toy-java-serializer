@@ -1,5 +1,6 @@
 package io.github.kevroletin.json.utils;
 
+import io.github.kevroletin.json.DeserializationException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -85,14 +86,17 @@ public class TypeUtils {
      */
     public static List<Field> getAllFields(Class<?> cls) {
         Field[] currentFields = cls.getDeclaredFields();
+
+        List<Field> allFields;
+
         if (currentFields == null || currentFields.length == 0) {
-            return new ArrayList<>(0);
+            allFields = new ArrayList<>();
+        } else {
+            allFields = new ArrayList<>(currentFields.length);
+            Collections.addAll(allFields, currentFields);
         }
 
-        List<Field> allFields = new ArrayList<>(currentFields.length);
-        Collections.addAll(allFields, currentFields);
-
-        if (cls.getSuperclass() != null && cls.getSuperclass() == Object.class) {
+        if (cls.getSuperclass() != null && cls.getSuperclass() != Object.class) {
             List<Field> next = getAllFields(cls.getSuperclass());
             allFields.addAll(next);
         }
@@ -101,18 +105,18 @@ public class TypeUtils {
     }
     
     /** This approach works better that class.newInstance because here we can
-     * call ctor.setAccessible(true) which prevents some access violation errors.
+     * call ctor.setAccessible(true) which prevents some access forbidden errors.
      */
-    public static Constructor<?> getDefaultConstructor(Class<?> cls) {
+    public static Constructor<?> getDefaultConstructor(Class<?> cls) throws DeserializationException {
         Optional<Constructor<?>> ctor =
             Arrays.stream(cls.getDeclaredConstructors())
             .filter((x) -> {
                     return x.getParameterTypes() == null
-                    || x.getParameterTypes().length == 0;
+                        || x.getParameterTypes().length == 0;
                 })
             .findFirst();
         if (!ctor.isPresent()) {
-            throw new IllegalStateException(cls.getName() + " have no default constructor");
+            throw new DeserializationException(cls.getName() + " have no default constructor");
         }
         Constructor<?> res = ctor.get();
         res.setAccessible(true);

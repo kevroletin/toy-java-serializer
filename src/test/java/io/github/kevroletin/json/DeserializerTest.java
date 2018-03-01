@@ -22,7 +22,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeObjectPoint() {
+    public void testDeserializeObjectPoint() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
         m.put("x", new ScalarNode(1.0));
         m.put("y", new ScalarNode(2.0));
@@ -34,7 +34,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeObjectWithInteger() {
+    public void testDeserializeObjectWithInteger() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
         m.put("value", new ScalarNode(1));
 
@@ -45,7 +45,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeObjectWithString() {
+    public void testDeserializeObjectWithString() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
         m.put("value", new ScalarNode("hello"));
 
@@ -56,7 +56,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeObjectWithBoolean() {
+    public void testDeserializeObjectWithBoolean() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
         m.put("value", new ScalarNode(true));
 
@@ -79,7 +79,7 @@ public class DeserializerTest {
     }
     
     @Test
-    public void testDeserializeScalar() {
+    public void testDeserializeScalar() throws DeserializationException {
         assertEquals(
             (Integer)1,
             Deserializer.deserialize(new ScalarNode(1), Integer.class)
@@ -96,8 +96,8 @@ public class DeserializerTest {
         );
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testDeserializeScalarWrongType() {
+    @Test(expected = DeserializationException.class)
+    public void testDeserializeScalarWrongType() throws DeserializationException {
         assertEquals(
             true,
             Deserializer.deserialize(new ScalarNode(true), Integer.class)
@@ -105,7 +105,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeArrayOfScalars() {
+    public void testDeserializeArrayOfScalars() throws DeserializationException {
         INode ir = new ArrayNode(Arrays.asList(
             new ScalarNode(1),
             new ScalarNode(2),
@@ -119,7 +119,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeEmptyArrayOfScalars() {
+    public void testDeserializeEmptyArrayOfScalars() throws DeserializationException {
         INode ir = new ArrayNode(Arrays.asList());
         Integer[] arr = {};
         assertArrayEquals(
@@ -129,7 +129,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeArrayOfObjects() {
+    public void testDeserializeArrayOfObjects() throws DeserializationException {
         INode ir = new ArrayNode(Arrays.asList(
             StringWrapper.astNode("hello"),
             StringWrapper.astNode("world")
@@ -142,7 +142,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeArrayOfArraysOfObjects() {
+    public void testDeserializeArrayOfArraysOfObjects() throws DeserializationException {
         INode ir = new ArrayNode(Arrays.asList(
             new ArrayNode(Arrays.asList(
                 IntegerWrapper.astNode(1),
@@ -242,7 +242,7 @@ public class DeserializerTest {
     }
 
     @Test
-    public void testDeserializeNestedObjects() {
+    public void testDeserializeNestedObjects() throws DeserializationException {
         Map<String, INode> mInner = new HashMap();
         mInner.put("value", new ScalarNode("secret"));
         Map<String, INode> mOuter = new HashMap();
@@ -258,15 +258,4 @@ public class DeserializerTest {
     @Test
     public void testDeserialize() {
     }
-
-    /* TODO:
-     * + objects with unboxed fields (throw)
-     * + object without public default constructor (throw)
-     * + object with generics (throw)
-     * + private fields
-     * + innder objects (throw)
-     * + nested objects
-     * + inheritance
-     */
-
 }

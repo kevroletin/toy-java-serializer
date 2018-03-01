@@ -14,11 +14,11 @@ import java.util.Set;
 
 public class Serializer {
     
-    static public INode serializeArray(Object x) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serializeArray(Object x) throws SerializationException {
         return serializeArray(x, new HashSet<>());
     }
     
-    static public INode serializeArray(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serializeArray(Object x, Set visited) throws SerializationException {
         assert(TypeUtils.isArray(x));
         markAsVisited(x, visited);
         
@@ -33,11 +33,11 @@ public class Serializer {
         return new ArrayNode(res);
     }
 
-    static public INode serializeObject(Object x) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serializeObject(Object x) throws SerializationException {
         return serializeObject(x, newIdentetySet());
     }
     
-    static public INode serializeObject(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serializeObject(Object x, Set visited) throws SerializationException {
         markAsVisited(x, visited);
 
         List<Field> fields = TypeUtils.getAllFields(x.getClass());
@@ -48,7 +48,13 @@ public class Serializer {
             if (!isSpecialFieldName(name)) {
                 f.setAccessible(true); // to access private fields
                 // TODO: check annotations to skip or validate fields
-                INode value = serialize(f.get(x), visited);
+                Object val;
+                try {
+                    val = f.get(x);
+                } catch (IllegalAccessException | IllegalArgumentException e) {
+                    throw new SerializationException("Failed to get object field", e);
+                }
+                INode value = serialize(val, visited);
                 map.put(name, value);
             }
         }
@@ -57,16 +63,16 @@ public class Serializer {
         return new ObjectNode(map);
     }
 
-    static private void throwUnsupportedClass(Class<?> cls) {
-        throw new RuntimeException(
+    static private void throwUnsupportedClass(Class<?> cls) throws SerializationException {
+        throw new SerializationException(
             String.format("Serialization of class %s is not supported", cls.getName()));
     }
 
-    static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serialize(Object x) throws SerializationException {
         return serialize(x, newIdentetySet());
     }
 
-    static public INode serialize(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serialize(Object x, Set visited) throws SerializationException {
         // TODO: find serializers using annotations
         if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());
@@ -84,10 +90,10 @@ public class Serializer {
         return x.equals("this") || x.startsWith("this$");
     }
 
-    private static void markAsVisited(Object x, Set<Object> visited) {
+    private static void markAsVisited(Object x, Set<Object> visited) throws SerializationException {
         if (visited.contains(x)) {
             // TODO: improve error message
-            throw new RuntimeException("Circular dependency");
+            throw new SerializationException("Circular dependency");
         }
         visited.add(x);
     }

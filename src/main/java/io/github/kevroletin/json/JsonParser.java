@@ -258,9 +258,9 @@ public class JsonParser {
 
     private ArrayNode parseArray() throws JsonParsingException {
         expect('[');
+        skipSpaces();
         List<INode> elems = new ArrayList();
 
-        skipSpaces();
         boolean ok = (in.get() != ']');
         while (ok) {
             INode elem = parseInternal();
@@ -280,9 +280,9 @@ public class JsonParser {
 
     private ObjectNode parseObject() throws JsonParsingException {
         expect('{');
+        skipSpaces();
         Map<String, INode> fields = new HashMap();
         
-        skipSpaces();
         boolean ok = (in.get() != '}');
         while (ok) {
             String key = eatString();
@@ -295,16 +295,17 @@ public class JsonParser {
             skipSpaces();
             if (in.get() == ','){
                 in.pop();
+                skipSpaces();
             } else {
                 ok = false;
             }
-            skipSpaces();
         }
         expect('}');
         return new ObjectNode(fields);
     }
 
     private INode parseInternal() throws JsonParsingException {
+        skipSpaces();
         Optional<INode> res = tryParse(this::parseObject); 
         if (!res.isPresent()) {
             res = tryParse(this::parseArray); 

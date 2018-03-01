@@ -4,7 +4,7 @@ import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
 import io.github.kevroletin.json.AST.ScalarNode;
-import io.github.kevroletin.json.TestTypes.Cons;
+import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.GenericWrapper;
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class SerializerTest {
             );
     }
 
-    @org.junit.Test(expected = RuntimeException.class)
+    @org.junit.Test(expected = SerializationException.class)
     public void testSerializeArrayThrows() throws Exception {
         char[] unsupportedArr = {'h', 'e', 'l', 'l', 'o'};
         Serializer.serializeArray(unsupportedArr);
@@ -97,22 +97,12 @@ public class SerializerTest {
     
     @Test
     public void testSerializeObjectList() throws Exception {
-        Cons<Integer> list = 
-            new Cons<Integer>(1, 
-                new Cons<Integer>(2, null));
-        
-        Map<String, INode> m2 = new HashMap<>();
-        m2.put("value", new ScalarNode(2));
-        m2.put("next", new ScalarNode(null));
-        INode n2 = new ObjectNode(m2);
-        
-        Map<String, INode> m1 = new HashMap<>();
-        m1.put("value", new ScalarNode(1));
-        m1.put("next", n2);
-        INode n1 = new ObjectNode(m1);
+        IntCons list = 
+            new IntCons(1, 
+                new IntCons(2, null));
         
         assertEquals(
-            n1,
+            IntCons.astFromList(Arrays.asList(1, 2)),
             Serializer.serialize(list)
         );
     }
@@ -130,10 +120,10 @@ public class SerializerTest {
         );
     }
     
-    @org.junit.Test(expected = RuntimeException.class)
+    @org.junit.Test(expected = SerializationException.class)
     public void testSerializeObjectCircularDependency() throws Exception {
-        Cons<Integer> lastNode = new Cons<Integer>(2, null);
-        Cons<Integer> list = new Cons<Integer>(1, lastNode);
+        IntCons lastNode = new IntCons(2, null);
+        IntCons list = new IntCons(1, lastNode);
         lastNode.next = list;
         
         Serializer.serialize(list);
@@ -147,12 +137,12 @@ public class SerializerTest {
         );
     }
 
-    @org.junit.Test(expected = RuntimeException.class)
+    @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonChar() throws Exception {
         Serializer.serialize('a');
     }    
 
-    @org.junit.Test(expected = RuntimeException.class)
+    @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonList() throws Exception {
         Serializer.serialize(Arrays.asList(1, 2, 3));
     }

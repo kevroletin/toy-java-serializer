@@ -1,18 +1,41 @@
 package io.github.kevroletin.json.TestTypes;
 
+import io.github.kevroletin.json.AST.ObjectNode;
+import io.github.kevroletin.json.AST.ScalarNode;
+import io.github.kevroletin.json.AST.INode;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
     
-public class Cons<T> {
-    public Cons next;
+public class IntCons {
+    public static INode astFromList(List<Integer> fromList) {
+        List<Integer> list = new ArrayList(fromList);
+        Collections.reverse(list);
 
-    public T value;
+        INode prev = new ScalarNode(null);
+        for (Integer i: list) {
+            Map<String, INode> m = new HashMap();
+            m.put("next", prev);
+            m.put("value", new ScalarNode(i));
+            prev = new ObjectNode(m);
+        }
 
-    public Cons(T value, Cons<T> next) {
+        return prev;
+    }
+
+    public IntCons next;
+
+    public Integer value;
+
+    public IntCons(Integer value, IntCons next) {
         this.next = next;
         this.value = value;
     }
 
-    public Cons() {}
+    public IntCons() {}
 
     @Override
     public String toString() {
@@ -38,7 +61,7 @@ public class Cons<T> {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Cons<?> other = (Cons<?>) obj;
+        final IntCons other = (IntCons) obj;
         if (!Objects.equals(this.next, other.next)) {
             return false;
         }

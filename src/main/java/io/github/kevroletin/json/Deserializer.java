@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class Deserializer {
 
-    private static <T> T createEmptyInstance(Class<T> cls) {
+    private static <T> T createEmptyInstance(Class<T> cls) throws DeserializationException {
         try {
             return (T) TypeUtils.getDefaultConstructor(cls).newInstance();
         } catch (Exception e) {
@@ -19,27 +19,27 @@ public class Deserializer {
                 "Failed to create new %s class instance. " +
                 "Public default constructor is not implemented or not accesable.",
                 cls.getName());
-            throw new RuntimeException(msg, e);
+            throw new DeserializationException(msg, e);
         }
     }
     
-    private static Map<String, INode> ensureNodeIsObject(INode ast) {
+    private static Map<String, INode> ensureNodeIsObject(INode ast) throws DeserializationException {
         if (!ast.isObject()) {
-            throw new RuntimeException(String.format("Expected object, got %s", ast.getClass().getName()));
+            throw new DeserializationException(String.format("Expected object, got %s", ast.getClass().getName()));
         }
         return ((ObjectNode)ast).get();
     }
 
-    private static List<INode> ensureNodeIsArray(INode ast) {
+    private static List<INode> ensureNodeIsArray(INode ast) throws DeserializationException {
         if (!ast.isArray()) {
-            throw new RuntimeException(String.format("Expected array or list, got %s", ast.getClass().getName()));
+            throw new DeserializationException(String.format("Expected array or list, got %s", ast.getClass().getName()));
         }
         return ((ArrayNode)ast).get();
     }
     
-    public static Object deserializeScalar(INode value, Class<?> cls) {
+    public static Object deserializeScalar(INode value, Class<?> cls) throws DeserializationException {
         if (TypeUtils.isUnsupportedScalar(cls)) {
-            throw new RuntimeException(
+            throw new DeserializationException(
                 String.format("Deserialization into %s class is not supported.", cls.getName()));
         }
         if (value.isNull()) {
@@ -48,7 +48,7 @@ public class Deserializer {
             assert(TypeUtils.isSupportedScalarClass(cls));
             Object res = value.getUnsafe();
             if (!res.getClass().equals(cls)) {
-                throw new RuntimeException(
+                throw new DeserializationException(
                     String.format("Failed to deserialize scalar: expected %s but got %s",
                                   cls.getName(), res.getClass().getName()));
             }
@@ -56,7 +56,7 @@ public class Deserializer {
         }
     }
 
-    public static Object deserializeArray(INode ast, Class<?> arrCls) {
+    public static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
@@ -68,7 +68,7 @@ public class Deserializer {
             try {
                 Array.set(res, i, val);
             } catch (IllegalArgumentException e) {
-                throw new RuntimeException(
+                throw new DeserializationException(
                     String.format("Failed to set array element #%d. Expected type %s but got %s",
                                   i,
                                   elemCls.getName(),
@@ -79,7 +79,7 @@ public class Deserializer {
         return res;
     }
     
-    public static Object deserializeObject(INode ast, Class<?> objCls) {
+    public static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
         Object resObj = createEmptyInstance(objCls);
         Map<String, INode> allValues = ensureNodeIsObject(ast);
         
@@ -89,43 +89,49 @@ public class Deserializer {
             INode val = allValues.get(name);
             // TODO: how about configurable nullable fields?
             if (val == null) {
-                throw new RuntimeException(String.format("%s field is missed in serializer AST", name));
+                throw new DeserializationException(String.format("%s field is missed in serializer AST", name));
             }
             
             Object value = deserializeWoTypecast(val, field.getType()); 
             try {
+                field.setAccessible(true);
                 field.set(resObj, value);
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                throw new RuntimeException(
+                throw new DeserializationException(
                     String.format("Failed to set %s field to value of type %s",
                                   field.getName(),
-                                  value.getClass().getName()));
+                                  value.getClass().getName()),
+                    e
+                );
             }
         }
 
         return resObj;
     }
 
-    private static Object deserializeWoTypecast(INode ir, Class<?> cls) {
+    private static Object deserializeWoTypecast(INode ast, Class<?> cls) throws DeserializationException {
         // TODO: find deserializers using annotations
         if (TypeUtils.isUnsupportedScalarClass(cls)) {
             throwUnsupportedClass(cls);
         }
+        if (ast.isNull()) {
+            return null;
+        }
         if (TypeUtils.isSupportedScalarClass(cls)) {
-            return deserializeScalar(ir, cls);
+            return deserializeScalar(ast, cls);
         }
         if (TypeUtils.isArrayClass(cls)) {
-            return deserializeArray(ir, cls);
+            return deserializeArray(ast, cls);
         }
-        return deserializeObject(ir, cls);
+        return deserializeObject(ast, cls);
     }
 
-    public static <T> T deserialize(INode ir, Class<T> cls) {
+    public static <T> T deserialize(INode ir, Class<T> cls) throws DeserializationException {
         return (T) deserializeWoTypecast(ir, cls);
     }
 
-    static private void throwUnsupportedClass(Class<?> cls) {
-        throw new RuntimeException(
+    static private void throwUnsupportedClass(Class<?> cls) throws DeserializationException {
+        throw new DeserializationException(
             String.format("Deserialization of class %s is not supported", cls.getName()));
     }
 }
