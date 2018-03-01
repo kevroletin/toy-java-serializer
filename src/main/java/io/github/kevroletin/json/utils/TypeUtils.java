@@ -1,4 +1,4 @@
-package io.github.kevroletin.json;
+package io.github.kevroletin.json.utils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

@@ -1,5 +1,6 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -13,13 +14,6 @@ import java.util.Set;
 
 public class Serializer {
     
-    static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
-        if (TypeUtils.isScalar(x) || TypeUtils.isArray(x)) {
-            throw new RuntimeException("Only objects can be serialized to Json");
-        }
-        return serializeInner(x);
-    }
-
     static public INode serializeArray(Object x) throws IllegalArgumentException, IllegalAccessException {
         return serializeArray(x, new HashSet<>());
     }
@@ -32,7 +26,7 @@ public class Serializer {
 
         for (int i = 0; i < Array.getLength(x); i++) {
             Object value = Array.get(x, i);
-            res.add(serializeInner(value, visited));
+            res.add(serialize(value, visited));
         }
 
         clearVisited(x, visited);
@@ -54,7 +48,7 @@ public class Serializer {
             if (!isSpecialFieldName(name)) {
                 f.setAccessible(true); // to access private fields
                 // TODO: check annotations to skip or validate fields
-                INode value = serializeInner(f.get(x), visited);
+                INode value = serialize(f.get(x), visited);
                 map.put(name, value);
             }
         }
@@ -68,11 +62,11 @@ public class Serializer {
             String.format("Serialization of class %s is not supported", cls.getName()));
     }
 
-    static public INode serializeInner(Object x) throws IllegalArgumentException, IllegalAccessException {
-        return serializeInner(x, newIdentetySet());
+    static public INode serialize(Object x) throws IllegalArgumentException, IllegalAccessException {
+        return serialize(x, newIdentetySet());
     }
 
-    static public INode serializeInner(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
+    static public INode serialize(Object x, Set visited) throws IllegalArgumentException, IllegalAccessException {
         // TODO: find serializers using annotations
         if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());

@@ -80,7 +80,7 @@ public class SerializerTest {
         m.put("y", new ScalarNode(2.0));
         assertEquals(
             new ObjectNode(m),
-            Serializer.serializeInner(new Point(1.0, 2.0))
+            Serializer.serialize(new Point(1.0, 2.0))
         );
     }
 
@@ -91,7 +91,7 @@ public class SerializerTest {
         m.put("y", new ScalarNode(null));
         assertEquals(
             new ObjectNode(m),
-            Serializer.serializeInner(new Point(1.0, null))
+            Serializer.serialize(new Point(1.0, null))
         );
     }
     
@@ -113,7 +113,7 @@ public class SerializerTest {
         
         assertEquals(
             n1,
-            Serializer.serializeInner(list)
+            Serializer.serialize(list)
         );
     }
 
@@ -126,7 +126,7 @@ public class SerializerTest {
             
         assertEquals(
             new ObjectNode(m),
-            Serializer.serializeInner(val)
+            Serializer.serialize(val)
         );
     }
     
@@ -136,12 +136,15 @@ public class SerializerTest {
         Cons<Integer> list = new Cons<Integer>(1, lastNode);
         lastNode.next = list;
         
-        Serializer.serializeInner(list);
+        Serializer.serialize(list);
     }
     
-    @org.junit.Test(expected = RuntimeException.class)
+    @Test
     public void testSerializeToJsonInteger() throws Exception {
-        Serializer.serialize(1);
+        assertEquals(
+            new ScalarNode(1),
+            Serializer.serialize(1)
+        );
     }
 
     @org.junit.Test(expected = RuntimeException.class)
@@ -154,10 +157,17 @@ public class SerializerTest {
         Serializer.serialize(Arrays.asList(1, 2, 3));
     }
 
-    @org.junit.Test(expected = RuntimeException.class)
+    @Test
     public void testSerializeToJsonArray() throws Exception {
         int[] arr = {1, 2, 3};
-        Serializer.serialize(arr);
+        assertEquals(
+            new ArrayNode(Arrays.asList(
+                new ScalarNode(1),
+                new ScalarNode(2),
+                new ScalarNode(3)
+            )),
+            Serializer.serialize(arr)
+        );
     }
  
     @org.junit.Test

@@ -1,7 +1,8 @@
 package io.github.kevroletin.json.AST;
 
+import io.github.kevroletin.json.utils.PrintingUtils;
 import java.util.Objects;
-import io.github.kevroletin.json.TypeUtils;
+import io.github.kevroletin.json.utils.TypeUtils;
 
 public class ScalarNode implements INode {
     Object child;
