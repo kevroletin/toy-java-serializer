@@ -28,7 +28,10 @@ public class JsonTest {
     @Test
     public void testJsonNestedObjects() throws Exception {
         String str = "{\"next\":{\"next\":null,\"value\":2},\"value\":1}";
-        Json.fromJson(str, IntCons.class);
+        assertEquals(
+            str,
+            Json.toJson(Json.fromJson(str, IntCons.class))
+        );
     }
 
     @Test
@@ -179,6 +182,11 @@ public class JsonTest {
         String str = "{\"booleanArray\":null,\"booleanValue\":null,\"doubleArray\":null,\"doubleValue\":null,\"intArray\":null,\"intValue\":null,\"object\":null,\"objectArray\":null,\"stringArray\":null,\"stringValue\":null}";
 
         assertEquals(
+            str, 
+            Json.toJson(obj1)
+        );
+
+        assertEquals(
             str,
             Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
         );
@@ -202,6 +210,11 @@ public class JsonTest {
         String str = "{\"booleanArray\":[null,null],\"booleanValue\":null,\"doubleArray\":[null,null,null],\"doubleValue\":null,\"intArray\":[null,null,null],\"intValue\":null,\"object\":null,\"objectArray\":[null],\"stringArray\":[null,null],\"stringValue\":null}";
 
         assertEquals(
+            str, 
+            Json.toJson(obj1)
+        );
+
+        assertEquals(
             str,
             Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
         );
@@ -223,6 +236,12 @@ public class JsonTest {
         obj1.objectArray = new AllSupportedTypesWrapper[] {};
 
         String str = "{\"booleanArray\":[],\"booleanValue\":null,\"doubleArray\":[],\"doubleValue\":null,\"intArray\":[],\"intValue\":null,\"object\":null,\"objectArray\":[],\"stringArray\":[],\"stringValue\":null}";
+
+        assertEquals(
+            str, 
+            Json.toJson(obj1)
+        );
+
         assertEquals(
             str,
             Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
@@ -246,6 +265,11 @@ public class JsonTest {
 
         String strWithSpaces = " { \"booleanArray\" :  [ true , false ] , \"booleanValue\" : true , \"doubleArray\" :  [ 1.0 , 2.0 , 3.0 ] , \"doubleValue\" : 1.0 , \"intArray\" :  [ 1 , 2 , 3 ] , \"intValue\" : 1 , \"object\" : null , \"objectArray\" :  [ ] , \"stringArray\" :  [ \"hello\" , \"world\" ]  , \"stringValue\" : \"one\" } ";
         String str = "{\"booleanArray\":[true,false],\"booleanValue\":true,\"doubleArray\":[1.0,2.0,3.0],\"doubleValue\":1.0,\"intArray\":[1,2,3],\"intValue\":1,\"object\":null,\"objectArray\":[],\"stringArray\":[\"hello\",\"world\"],\"stringValue\":\"one\"}";
+
+        assertEquals(
+            str, 
+            Json.toJson(obj1)
+        );
 
         assertEquals(
             str,
