@@ -1,6 +1,6 @@
 package io.github.kevroletin.json.exceptions;
 
-public class JsonParsingException extends Exception {
+public class JsonParsingException extends JsonException {
 
     public JsonParsingException() {
     }

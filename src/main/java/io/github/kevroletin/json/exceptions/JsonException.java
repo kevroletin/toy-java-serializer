@@ -1,4 +1,4 @@
-package io.github.kevroletin.json;
+package io.github.kevroletin.json.exceptions;
 
 public class JsonException extends Exception {
 

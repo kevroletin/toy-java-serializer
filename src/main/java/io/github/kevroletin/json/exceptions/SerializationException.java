@@ -1,7 +1,5 @@
 package io.github.kevroletin.json.exceptions;
 
-import io.github.kevroletin.json.JsonException;
-
 public class SerializationException extends JsonException {
 
     public SerializationException() {
