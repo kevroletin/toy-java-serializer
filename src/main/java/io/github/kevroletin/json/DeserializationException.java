@@ -1,6 +1,6 @@
 package io.github.kevroletin.json;
 
-public class DeserializationException extends Exception {
+public class DeserializationException extends JsonException {
 
     public DeserializationException() {
     }
