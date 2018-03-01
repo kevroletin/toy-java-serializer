@@ -243,6 +243,7 @@ public class Main {
     }
 
     static public void main(String[] args) throws JsonException {
+        testValidator();
         goodCases();
         badCase1();
         badCase2();
