@@ -17,6 +17,10 @@ import io.github.kevroletin.json.annotations.TypeValidator;
 
 public class Deserializer {
 
+    public static <T> T deserialize(INode ast, Class<T> cls) throws DeserializationException {
+        return (T) deserializeWoTypecast(ast, cls);
+    }
+
     private static <T> T createEmptyInstance(Class<T> cls) throws DeserializationException {
         try {
             return (T) TypeUtils.getDefaultConstructor(cls).newInstance();
@@ -43,7 +47,7 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
     
-    public static Object deserializeScalar(INode value, Class<?> cls) throws DeserializationException {
+    private static Object deserializeScalar(INode value, Class<?> cls) throws DeserializationException {
         if (TypeUtils.isUnsupportedScalar(cls)) {
             throw new DeserializationException(
                 String.format("Deserialization into %s class is not supported.", cls.getName()));
@@ -62,7 +66,7 @@ public class Deserializer {
         }
     }
 
-    public static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException, ValidationException {
+    private static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException, ValidationException {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
@@ -129,7 +133,7 @@ public class Deserializer {
         }
     }
     
-    public static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
+    private static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
         Object resObj = createEmptyInstance(objCls);
         Map<String, INode> allValues = ensureNodeIsObject(ast);
         
@@ -177,11 +181,7 @@ public class Deserializer {
         return deserializeObject(ast, cls);
     }
 
-    public static <T> T deserialize(INode ast, Class<T> cls) throws DeserializationException {
-        return (T) deserializeWoTypecast(ast, cls);
-    }
-
-    static private void throwUnsupportedClass(Class<?> cls) throws DeserializationException {
+    private static void throwUnsupportedClass(Class<?> cls) throws DeserializationException {
         throw new DeserializationException(
             String.format("Deserialization of class %s is not supported", cls.getName()));
     }

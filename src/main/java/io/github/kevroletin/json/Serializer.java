@@ -14,12 +14,16 @@ import java.util.List;
 import java.util.Set;
 
 public class Serializer {
+
+    public static INode serialize(Object x) throws SerializationException {
+        return serialize(x, newIdentetySet());
+    }
     
-    static public INode serializeArray(Object x) throws SerializationException {
+    private static INode serializeArray(Object x) throws SerializationException {
         return serializeArray(x, new HashSet<>());
     }
     
-    static public INode serializeArray(Object x, Set visited) throws SerializationException {
+    private static INode serializeArray(Object x, Set visited) throws SerializationException {
         assert(TypeUtils.isArray(x));
         markAsVisited(x, visited);
         
@@ -34,11 +38,11 @@ public class Serializer {
         return new ArrayNode(res);
     }
 
-    static public INode serializeObject(Object x) throws SerializationException {
+    private static INode serializeObject(Object x) throws SerializationException {
         return serializeObject(x, newIdentetySet());
     }
     
-    static public INode serializeObject(Object x, Set visited) throws SerializationException {
+    private static INode serializeObject(Object x, Set visited) throws SerializationException {
         markAsVisited(x, visited);
 
         List<Field> fields = TypeUtils.getAllFields(x.getClass());
@@ -64,16 +68,12 @@ public class Serializer {
         return new ObjectNode(map);
     }
 
-    static private void throwUnsupportedClass(Class<?> cls) throws SerializationException {
+    private static void throwUnsupportedClass(Class<?> cls) throws SerializationException {
         throw new SerializationException(
             String.format("Serialization of class %s is not supported", cls.getName()));
     }
 
-    static public INode serialize(Object x) throws SerializationException {
-        return serialize(x, newIdentetySet());
-    }
-
-    static public INode serialize(Object x, Set visited) throws SerializationException {
+    private static INode serialize(Object x, Set visited) throws SerializationException {
         // TODO: find serializers using annotations
         if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());

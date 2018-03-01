@@ -21,7 +21,7 @@ public class SerializerTest {
     public void testSerializeArray() throws Exception {
         String[] strArr = {"hello", "world"};
         assertEquals(
-            Serializer.serializeArray(strArr),
+            Serializer.serialize(strArr),
             new ArrayNode(Arrays.asList(
                               new ScalarNode("hello"),
                               new ScalarNode("world")))
@@ -29,7 +29,7 @@ public class SerializerTest {
         
         int[] intArr = {1, 2, 3};
         assertEquals(
-            Serializer.serializeArray(intArr),
+            Serializer.serialize(intArr),
             new ArrayNode(Arrays.asList(
                               new ScalarNode(1),
                               new ScalarNode(2),
@@ -38,7 +38,7 @@ public class SerializerTest {
         
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
-            Serializer.serializeArray(doubleArr),
+            Serializer.serialize(doubleArr),
             new ArrayNode(Arrays.asList(
                               new ScalarNode(1.0),
                               new ScalarNode(2.0),
@@ -47,7 +47,7 @@ public class SerializerTest {
 
         boolean[] booleanArr = {true, false};
         assertEquals(
-            Serializer.serializeArray(booleanArr),
+            Serializer.serialize(booleanArr),
             new ArrayNode(Arrays.asList(
                               new ScalarNode(true),
                               new ScalarNode(false)))
@@ -55,7 +55,7 @@ public class SerializerTest {
 
         Object[] nullArr = {null, null};
         assertEquals(
-            Serializer.serializeArray(nullArr),
+            Serializer.serialize(nullArr),
             new ArrayNode(Arrays.asList(
                               new ScalarNode(null),
                               new ScalarNode(null)))
@@ -63,7 +63,7 @@ public class SerializerTest {
         
         Object[] emptyArr = {};
         assertEquals(
-            Serializer.serializeArray(emptyArr),
+            Serializer.serialize(emptyArr),
             new ArrayNode(new ArrayList())
             );
     }
@@ -71,7 +71,7 @@ public class SerializerTest {
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeArrayThrows() throws Exception {
         char[] unsupportedArr = {'h', 'e', 'l', 'l', 'o'};
-        Serializer.serializeArray(unsupportedArr);
+        Serializer.serialize(unsupportedArr);
     }
     
     @Test

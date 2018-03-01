@@ -13,6 +13,11 @@ import java.util.Optional;
 
 public class JsonParser {
 
+    static public INode parse(String string) throws JsonParsingException {
+        JsonParser parser = new JsonParser(string);
+        return parser.parseInternal();
+    }
+
     static class StringInputSeq {
         public class StateGuard {
             final int oldState;
@@ -80,9 +85,9 @@ public class JsonParser {
         T apply() throws JsonParsingException;
     }
 
-    StringInputSeq in;
+    private StringInputSeq in;
 
-    public JsonParser(String str) {
+    private JsonParser(String str) {
         this.in = new StringInputSeq(str);
     }
 
@@ -315,10 +320,5 @@ public class JsonParser {
             res = tryParse(this::parseScalar); 
         }
         return res.orElseThrow(() -> new JsonParsingException("Failed to parse json"));
-    }
-
-    static public INode parse(String string) throws JsonParsingException {
-        JsonParser parser = new JsonParser(string);
-        return parser.parseInternal();
     }
 }
