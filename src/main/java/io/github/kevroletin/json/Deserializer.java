@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import io.github.kevroletin.json.annotations.TypeValidator;
 
 public class Deserializer {
 
@@ -105,6 +106,28 @@ public class Deserializer {
             }
         }
     }
+
+    private static void validateObject(Object obj, Class<?> objCls) throws ValidationException {
+        TypeValidator typeValidator = objCls.getAnnotation(TypeValidator.class);
+        if (typeValidator != null) {
+            ValidationFunction f;
+            try {
+                Constructor<?> ctor = TypeUtils.getDefaultConstructor(typeValidator.cls());
+                f = (ValidationFunction) ctor.newInstance();
+            } catch (Exception e) {
+                throw new ValidationException(
+                    String.format("Failed to instantiate %s validator", typeValidator.cls().getName()));
+            }
+            Boolean ok = f.validate(obj);
+            if (!ok) {
+                throw new ValidationException(
+                    String.format("Validator %s rejected value %s", 
+                        typeValidator.cls().getName(),
+                        obj.toString()
+                    ));
+            }
+        }
+    }
     
     public static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
         Object resObj = createEmptyInstance(objCls);
@@ -133,6 +156,7 @@ public class Deserializer {
             }
         }
 
+        validateObject(resObj, objCls);
         return resObj;
     }
 
