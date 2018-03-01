@@ -1,6 +1,6 @@
 package io.github.kevroletin.json.utils;
 
-import io.github.kevroletin.json.DeserializationException;
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;

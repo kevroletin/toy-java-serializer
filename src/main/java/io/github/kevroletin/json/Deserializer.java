@@ -1,10 +1,15 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
+import io.github.kevroletin.json.annotations.FieldValidator;
+import io.github.kevroletin.json.annotations.ValidationFunction;
+import io.github.kevroletin.json.exceptions.ValidationException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +61,7 @@ public class Deserializer {
         }
     }
 
-    public static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException {
+    public static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException, ValidationException {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
@@ -78,6 +83,28 @@ public class Deserializer {
 
         return res;
     }
+
+    private static void validateField(Field field, Object value) throws ValidationException {
+        FieldValidator fieldValidator = field.getAnnotation(FieldValidator.class);
+        if (fieldValidator != null) {
+            ValidationFunction f;
+            try {
+                Constructor<?> ctor = TypeUtils.getDefaultConstructor(fieldValidator.cls());
+                f = (ValidationFunction) ctor.newInstance();
+            } catch (Exception e) {
+                throw new ValidationException(
+                    String.format("Failed to instantiate %s validator", fieldValidator.cls().getName()));
+            }
+            Boolean ok = f.validate(value);
+            if (!ok) {
+                throw new ValidationException(
+                    String.format("Validator %s rejected value %s", 
+                        fieldValidator.cls().getName(),
+                        value.toString()
+                    ));
+            }
+        }
+    }
     
     public static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
         Object resObj = createEmptyInstance(objCls);
@@ -91,8 +118,8 @@ public class Deserializer {
             if (val == null) {
                 throw new DeserializationException(String.format("%s field is missed in serializer AST", name));
             }
-            
             Object value = deserializeWoTypecast(val, field.getType()); 
+            validateField(field, value);
             try {
                 field.setAccessible(true);
                 field.set(resObj, value);
@@ -126,8 +153,8 @@ public class Deserializer {
         return deserializeObject(ast, cls);
     }
 
-    public static <T> T deserialize(INode ir, Class<T> cls) throws DeserializationException {
-        return (T) deserializeWoTypecast(ir, cls);
+    public static <T> T deserialize(INode ast, Class<T> cls) throws DeserializationException {
+        return (T) deserializeWoTypecast(ast, cls);
     }
 
     static private void throwUnsupportedClass(Class<?> cls) throws DeserializationException {

@@ -1,5 +1,6 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.exceptions.SerializationException;
 import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.*;
 import java.lang.reflect.Array;

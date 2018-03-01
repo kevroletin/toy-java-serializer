@@ -1,6 +1,6 @@
 package io.github.kevroletin;
 
-import io.github.kevroletin.json.DeserializationException;
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
 import io.github.kevroletin.json.TestTypes.EmptyObject;
 import io.github.kevroletin.json.TestTypes.IntCons;

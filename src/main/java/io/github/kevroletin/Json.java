@@ -2,11 +2,11 @@ package io.github.kevroletin;
 
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
-import io.github.kevroletin.json.DeserializationException;
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.JsonParser;
-import io.github.kevroletin.json.JsonParsingException;
+import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.Serializer;
-import io.github.kevroletin.json.SerializationException;
+import io.github.kevroletin.json.exceptions.SerializationException;
 
 public class Json {
     static public String toJson(Object obj) throws SerializationException {

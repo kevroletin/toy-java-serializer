@@ -1,5 +1,6 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
