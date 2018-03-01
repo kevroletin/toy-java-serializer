@@ -1,6 +1,5 @@
 package io.github.kevroletin.json.AST;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,5 +53,37 @@ public class ArrayNode implements INode {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void toJson(StringBuffer res) {
+        res.append("[");
+        for (int i = 0; i < childs.size(); ++i) {
+            if (i != 0) {
+                res.append(",");
+            }
+            childs.get(i).toJson(res);
+        }
+        res.append("]");
+    }
+
+    @Override
+    public void toPrettyJson(int offset, StringBuffer res) {
+        if (childs.isEmpty()) {
+            res.append("[]");
+            return;
+        }
+
+        res.append("[\n");
+        for (int i = 0; i < childs.size(); ++i) {
+            if (i != 0) {
+                res.append(",\n");
+            }
+            PrintingUtils.printOffset(offset + 1, res);
+            childs.get(i).toPrettyJson(offset + 1, res);
+        }
+        res.append("\n");
+        PrintingUtils.printOffset(offset, res);
+        res.append("]");
     }
 }

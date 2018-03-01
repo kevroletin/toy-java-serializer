@@ -25,4 +25,20 @@ public interface INode {
     default boolean isNull() { return false; }
 
     Object getUnsafe();
+
+    default String toJson() {
+        StringBuffer buff = new StringBuffer();
+        toJson(buff);
+        return buff.toString();
+    } 
+
+    void toJson(StringBuffer res);
+
+    default String toPrettyJson() {
+        StringBuffer buff = new StringBuffer();
+        toPrettyJson(0, buff);
+        return buff.toString();
+    }
+
+    void toPrettyJson(int offset, StringBuffer res);
 }

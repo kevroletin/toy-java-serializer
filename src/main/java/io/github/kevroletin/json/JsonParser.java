@@ -14,7 +14,7 @@ public class JsonParser {
 
     static class StringInputSeq {
         public class StateGuard {
-            int oldState;
+            final int oldState;
 
             StateGuard() {
                 oldState = StringInputSeq.this.getState();

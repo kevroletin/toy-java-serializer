@@ -190,4 +190,46 @@ public class JsonParserTest {
             JsonParser.parse("{\"x\": 1.0, \"y\": 2.0}")
         );
     }
+
+    @Test
+    public void testJsonPrint() throws JsonParsingException {
+        assertEquals(
+            "{\"a\":1,\"b\":2.0,\"c\":\"hello\"}",
+            JsonParser.parse("{\"a\": 1, \"b\": 2.0, \"c\": \"hello\"}").toJson()
+        );
+    }
+
+    @Test
+    public void testJsonPrettyPrint() throws JsonParsingException {
+        assertEquals(
+            "{\n"
+            + "  \"a\": 1,\n"
+            + "  \"b\": 2.0,\n"
+            + "  \"c\": \"hello\"\n"
+            + "}",
+            JsonParser.parse("{\"a\": 1, \"b\": 2.0, \"c\": \"hello\"}").toPrettyJson()
+        );
+    }
+
+    @Test
+    public void testJsonNestedPrint() throws JsonParsingException {
+        assertEquals(
+            "{\n"
+            + "  \"child\": [\n"
+            + "    {},\n"
+            + "    [],\n"
+            + "    {\n"
+            + "      \"x\": true,\n"
+            + "      \"y\": false\n"
+            + "    },\n"
+            + "    [\n"
+            + "      1,\n"
+            + "      2,\n"
+            + "      3\n"
+            + "    ]\n"
+            + "  ]\n"
+            + "}",
+            JsonParser.parse("{\"child\": [{}, [], {\"x\": true, \"y\": false}, [1, 2, 3]]}").toPrettyJson()
+        );
+    }
 }

@@ -1,5 +1,8 @@
 package io.github.kevroletin.json.AST;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -53,5 +56,51 @@ public class ObjectNode implements INode {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void toJson(StringBuffer res) {
+        List<String> keys = new ArrayList();
+        keys.addAll(childs.keySet());
+        Collections.sort(keys);
+
+        res.append("{");
+        for (int i = 0; i < childs.size(); ++i) {
+            if (i != 0) {
+                res.append(",");
+            }
+            String k = keys.get(i);
+            res.append(PrintingUtils.escapeString(k));
+            res.append(":");
+            childs.get(k).toJson(res);
+        }
+        res.append("}");
+    }
+
+    @Override
+    public void toPrettyJson(int offset, StringBuffer res) {
+        if (childs.isEmpty()) {
+            res.append("{}");
+            return;
+        }
+
+        List<String> keys = new ArrayList();
+        keys.addAll(childs.keySet());
+        Collections.sort(keys);
+
+        res.append("{\n");
+        for (int i = 0; i < childs.size(); ++i) {
+            if (i != 0) {
+                res.append(",\n");
+            }
+            String k = keys.get(i);
+            PrintingUtils.printOffset(offset + 1, res);
+            res.append(PrintingUtils.escapeString(k));
+            res.append(": ");
+            childs.get(k).toPrettyJson(offset + 1, res);
+        }
+        res.append("\n");
+        PrintingUtils.printOffset(offset, res);
+        res.append("}");
     }
 }
