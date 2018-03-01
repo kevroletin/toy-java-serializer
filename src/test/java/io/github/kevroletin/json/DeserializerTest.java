@@ -266,6 +266,7 @@ public class DeserializerTest {
      * + private fields
      * + innder objects (throw)
      * + nested objects
+     * + inheritance
      */
 
 }
