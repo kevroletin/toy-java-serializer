@@ -11,7 +11,7 @@ There are also two annotations in
 
 ## Restrictions and behavior details 
 
-+ Deserializable object have few restrictions:
++ Ther are restrictions for deserializable object:
 
   + Class should implement public default constructor *(constructor with no
     arguments)*, otherwise serializer will not be able to create object of that
