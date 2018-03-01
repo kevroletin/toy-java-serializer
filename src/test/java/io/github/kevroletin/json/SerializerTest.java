@@ -23,18 +23,18 @@ public class SerializerTest {
         assertEquals(
             Serializer.serialize(strArr),
             new ArrayNode(Arrays.asList(
-                              new ScalarNode("hello"),
-                              new ScalarNode("world")))
-            );
+                new ScalarNode("hello"),
+                new ScalarNode("world")))
+        );
         
         int[] intArr = {1, 2, 3};
         assertEquals(
             Serializer.serialize(intArr),
             new ArrayNode(Arrays.asList(
-                              new ScalarNode(1),
-                              new ScalarNode(2),
-                              new ScalarNode(3)))
-            );
+                new ScalarNode(1),
+                new ScalarNode(2),
+                new ScalarNode(3)))
+        );
         
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
@@ -49,23 +49,23 @@ public class SerializerTest {
         assertEquals(
             Serializer.serialize(booleanArr),
             new ArrayNode(Arrays.asList(
-                              new ScalarNode(true),
-                              new ScalarNode(false)))
-            );
+                new ScalarNode(true),
+                new ScalarNode(false)))
+        );
 
         Object[] nullArr = {null, null};
         assertEquals(
             Serializer.serialize(nullArr),
             new ArrayNode(Arrays.asList(
-                              new ScalarNode(null),
-                              new ScalarNode(null)))
-            );
+                new ScalarNode(null),
+                new ScalarNode(null)))
+        );
         
         Object[] emptyArr = {};
         assertEquals(
             Serializer.serialize(emptyArr),
             new ArrayNode(new ArrayList())
-            );
+        );
     }
 
     @org.junit.Test(expected = SerializationException.class)
@@ -114,7 +114,7 @@ public class SerializerTest {
         
         Map<String, INode> m = new HashMap<>();
         m.put("value", new ScalarNode("Secret"));
-            
+
         assertEquals(
             new ObjectNode(m),
             Serializer.serialize(val)
@@ -141,7 +141,7 @@ public class SerializerTest {
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonChar() throws Exception {
         Serializer.serialize('a');
-    }    
+    }
 
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonList() throws Exception {
@@ -160,7 +160,7 @@ public class SerializerTest {
             Serializer.serialize(arr)
         );
     }
- 
+
     @org.junit.Test
     public void testSerializeToJsonObject() throws Exception {
         Map<String, INode> m = new HashMap<>();
@@ -170,6 +170,6 @@ public class SerializerTest {
             new ObjectNode(m),
             Serializer.serialize(new Point(1.0, 2.0))
         );
-    }    
-    
+    }
+
 }

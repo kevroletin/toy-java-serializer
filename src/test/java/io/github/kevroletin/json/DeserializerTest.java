@@ -124,7 +124,7 @@ public class DeserializerTest {
         INode ir = new ArrayNode(Arrays.asList());
         Integer[] arr = {};
         assertArrayEquals(
-            arr, 
+            arr,
             Deserializer.deserialize(ir, Integer[].class
         ));
     }
@@ -137,7 +137,7 @@ public class DeserializerTest {
         ));
         StringWrapper[] arr = {new StringWrapper("hello"), new StringWrapper("world")};
         assertArrayEquals(
-            arr, 
+            arr,
             Deserializer.deserialize(ir, StringWrapper[].class
         ));
     }
@@ -250,10 +250,11 @@ public class DeserializerTest {
         mOuter.put("value", new ObjectNode(mInner));
         INode ir = new ObjectNode(mOuter);
         OuterClass ans = new OuterClass(new InnerClass("secret"));
-    
+
         assertEquals(
             ans,
-            Deserializer.deserialize(ir, OuterClass.class));
+            Deserializer.deserialize(ir, OuterClass.class)
+        );
     }
 
     @Test
