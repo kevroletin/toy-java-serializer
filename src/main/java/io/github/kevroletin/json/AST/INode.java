@@ -2,10 +2,9 @@ package io.github.kevroletin.json.AST;
 
 /** INode - intermediate representation for parsed Json
  *
- * We represent all scalar types, booleans and null as a single PrimitiveNode
- * for simplicity. This is trade off between type safety of amount of code. 
- * Anyway we plan to use a lot of reflection and AST nodes are not part of user 
- * interface.
+ * All scalar types, booleans and null are represented by the same Scalar Node
+ * type. This is trade off between type safety of amount of code which looks 
+ * like a sweet spot.
  */
 public interface INode {
     default boolean isArray() { return false; }
