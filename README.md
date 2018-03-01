@@ -1,9 +1,13 @@
 # Json serializer/desealizer
 
-See `src/main/java/io/github/kevroletin/Main.java` for sample usage. See
-`src/main/java/io/github/kevroletin/Json.java` for list of API functions. There
-are also two annotations in
-`src/main/java/io/github/kevroletin/json/annotations` directory.
+See 
+[Main.java](src/main/java/io/github/kevroletin/Main.java) for sample usage. 
+
+See
+[Json.java](src/main/java/io/github/kevroletin/Json.java) for a list of API functions. 
+
+There are also two annotations in
+[annotations](src/main/java/io/github/kevroletin/json/annotations) directory.
 
 ## Restrictions and behavior details 
 
