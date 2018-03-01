@@ -11,7 +11,7 @@ There are also two annotations in
 
 ## Restrictions and behavior details 
 
-+ Deserializable object have few restrictions:
++ Ther are restrictions for deserializable object:
 
   + Class should implement public default constructor *(constructor with no
     arguments)*, otherwise serializer will not be able to create object of that
@@ -22,6 +22,8 @@ There are also two annotations in
   + No support for generics. The reason for that is that due to type erasure there
     is not sufficient information in runtime to find actual parameter types
     *(probably I missed some hidden magic though)*.
+    
+  + No unboxed types. Json scalar types are represented by Java types Integer, Double, Boolean, String.
 
 + Trailing input is just ignored.
 
