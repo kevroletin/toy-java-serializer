@@ -7,14 +7,10 @@ import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
 
-class TelephoneNumberValidator implements ValidationFunction {
-    @Override
-    public Boolean validate(Object data) throws ValidationException {
-        if (!(data instanceof TelephoneNumber)) { return false; }
-        String value = ((TelephoneNumber)data).value;
-
-        if (value.length() == 7) {
-            if (!(value.charAt(0) == '7' || value.charAt(0) != '8')) {
+class TelephoneNumberStringValidator implements ValidationFunction {
+    public static boolean validateString(String value) {
+        if (value.length() == 11) {
+            if (!(value.charAt(0) != '7' || value.charAt(0) != '8')) {
                 return false;
             } 
             for (int i = 1; i < value.length(); ++i) {
@@ -25,11 +21,11 @@ class TelephoneNumberValidator implements ValidationFunction {
             return true;
         }
 
-        if (value.length() == 8) {
+        if (value.length() == 12) {
             if (value.charAt(0) != '+') {
                 return false;
             }
-            if (!(value.charAt(1) == '7' || value.charAt(1) != '8')) {
+            if (!(value.charAt(1) != '7' || value.charAt(1) != '8')) {
                 return false;
             } 
             for (int i = 2; i < value.length(); ++i) {
@@ -42,8 +38,25 @@ class TelephoneNumberValidator implements ValidationFunction {
 
         return false;
     }
+
+    @Override
+    public Boolean validate(Object data) throws ValidationException {
+        if (!(data instanceof String)) { return false; }
+        return validateString((String) data);
+    }
 }
 
+
+class TelephoneNumberValidator implements ValidationFunction {
+    @Override
+    public Boolean validate(Object data) throws ValidationException {
+        if (!(data instanceof TelephoneNumber)) { return false; }
+        String value = ((TelephoneNumber)data).value;
+        return TelephoneNumberStringValidator.validateString(value);
+    }
+}
+
+@TypeValidator(cls = TelephoneNumberValidator.class)
 class TelephoneNumber {
     String value;
 
@@ -84,7 +97,6 @@ class TelephoneNumber {
     }
 }
 
-@TypeValidator(cls = TelephoneNumberValidator.class)
 class User1 {
     public TelephoneNumber number;
 
@@ -126,7 +138,7 @@ class User1 {
 }
 
 class User2 {
-    @FieldValidator(cls = TelephoneNumberValidator.class)
+    @FieldValidator(cls = TelephoneNumberStringValidator.class)
     public String number;
 
     public User2(String number) {
@@ -175,14 +187,14 @@ public class Main {
                       "  }\n" +
                       "}";
         assert(Json.toPrettyJson(u1).equals(str1));
-        assert(Json.fromJson(str1, User1.class).equals(str1));
+        assert(Json.toPrettyJson(Json.fromJson(str1, User1.class)).equals(str1));
 
         User2 u2 = new User2("+70123456789");
         String str2 = "{\n" +
                       "  \"number\": \"+70123456789\"\n" +
                       "}";
         assert(Json.toPrettyJson(u2).equals(str2));
-        assert(Json.fromJson(str2, User2.class).equals(str2));
+        assert(Json.toPrettyJson(Json.fromJson(str2, User2.class)).equals(str2));
     }
 
     static void badCase1() throws JsonException {
@@ -209,14 +221,25 @@ public class Main {
             User2 u2 = new User2("+70123456789");
             String str2 =
                 "{\n" +
-                "  \"number\": \"+70123456789\"\n" +
+                "  \"number\": \"23456789\"\n" +
                 "}";
             Json.fromJson(str2, User2.class);
         } 
         catch (ValidationException e) {
-            ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberValidator rejected value");
+            ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"
+);
         }
         assert(ok);
+    }
+
+    static public void testValidator() throws ValidationException {
+        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("+70123456789")) );
+        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("+80123456789")) );
+        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("70123456789")) );
+        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("80123456789")) );
+        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber("0123456789"))) );
+        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber(""))) );
+        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber("abc"))) );
     }
 
     static public void main(String[] args) throws JsonException {
