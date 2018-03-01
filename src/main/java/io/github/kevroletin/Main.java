@@ -3,14 +3,8 @@ package io.github.kevroletin;
 import io.github.kevroletin.json.annotations.FieldValidator;
 import io.github.kevroletin.json.annotations.TypeValidator;
 import io.github.kevroletin.json.annotations.ValidationFunction;
-import io.github.kevroletin.json.exceptions.DeserializationException;
-import io.github.kevroletin.json.exceptions.JsonParsingException;
-import io.github.kevroletin.json.exceptions.SerializationException;
 import io.github.kevroletin.json.exceptions.ValidationException;
-import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Objects;
-import javax.xml.transform.stream.StreamSource;
 import io.github.kevroletin.json.exceptions.JsonException;
 
 class TelephoneNumberValidator implements ValidationFunction {
