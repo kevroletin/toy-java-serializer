@@ -1,8 +1,9 @@
 package io.github.kevroletin;
 
+import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.annotations.FieldValidator;
-import io.github.kevroletin.json.annotations.TypeValidator;
 import io.github.kevroletin.json.annotations.ValidationFunction;
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
@@ -40,7 +41,7 @@ class TelephoneNumberStringValidator implements ValidationFunction {
     }
 
     @Override
-    public Boolean validate(Object data) throws ValidationException {
+    public Boolean validate(Object data) {
         if (!(data instanceof String)) { return false; }
         return validateString((String) data);
     }
@@ -49,14 +50,13 @@ class TelephoneNumberStringValidator implements ValidationFunction {
 
 class TelephoneNumberValidator implements ValidationFunction {
     @Override
-    public Boolean validate(Object data) throws ValidationException {
+    public Boolean validate(Object data) {
         if (!(data instanceof TelephoneNumber)) { return false; }
         String value = ((TelephoneNumber)data).value;
         return TelephoneNumberStringValidator.validateString(value);
     }
 }
 
-@TypeValidator(cls = TelephoneNumberValidator.class)
 class TelephoneNumber {
     String value;
 
@@ -198,38 +198,28 @@ public class Main {
     }
 
     static void badCase1() throws JsonException {
-        boolean ok = false;
-        try {
-            User1 u1 = new User1(new TelephoneNumber("23456789"));
-            String str1 =
-                "{\n" +
-                "  \"number\": {\n" +
-                "    \"value\": \"23456789\"\n" +
-                "  }\n" +
-                "}";
-            Json.fromJson(str1, User1.class);
-        } 
-        catch (ValidationException e) {
-            ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberValidator rejected value");
-        }
-        assert(ok);
+        User1 u1 = new User1(new TelephoneNumber("23456789"));
+        String str1 =
+            "{\n" +
+            "  \"number\": {\n" +
+            "    \"value\": \"23456789\"\n" +
+            "  }\n" +
+            "}";
+        Result<User1> res = Json.fromJsonNoThrow(str1, User1.class);
+        assert(res.getErrors().get(0).contains(
+            "Validator io.github.kevroletin.TelephoneNumberValidator rejected value"));
     }
 
     static void badCase2() throws JsonException {
-        boolean ok = false;
-        try {
-            User2 u2 = new User2("+70123456789");
-            String str2 =
-                "{\n" +
-                "  \"number\": \"23456789\"\n" +
-                "}";
-            Json.fromJson(str2, User2.class);
-        } 
-        catch (ValidationException e) {
-            ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"
-);
-        }
-        assert(ok);
+        User2 u2 = new User2("+70123456789");
+        String str2 =
+            "{\n" +
+            "  \"number\": \"23456789\"\n" +
+            "}";
+        Result<User2> res = Json.fromJsonNoThrow(str2, User2.class);
+        assert(res.hasErrors());
+        assert(res.getErrors().get(0).contains(
+            "Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"));
     }
 
     static public void testValidator() throws ValidationException {
@@ -245,7 +235,7 @@ public class Main {
     static public void main(String[] args) throws JsonException {
         testValidator();
         goodCases();
-        badCase1();
+//        badCase1();
         badCase2();
     }
 }

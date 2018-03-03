@@ -30,7 +30,7 @@ public class DeserializerTest {
 
         assertEquals(
             new Point(1.0, 2.0),
-            Deserializer.deserialize(new ObjectNode(m), Point.class)
+            new Deserializer().deserialize(new ObjectNode(m), Point.class).get()
         );
     }
 
@@ -41,7 +41,7 @@ public class DeserializerTest {
 
         assertEquals(
             new IntegerWrapper(1),
-            Deserializer.deserialize(new ObjectNode(m), IntegerWrapper.class)
+            new Deserializer().deserialize(new ObjectNode(m), IntegerWrapper.class).get()
         );
     }
 
@@ -52,7 +52,7 @@ public class DeserializerTest {
 
         assertEquals(
             new StringWrapper("hello"),
-            Deserializer.deserialize(new ObjectNode(m), StringWrapper.class)
+            new Deserializer().deserialize(new ObjectNode(m), StringWrapper.class).get()
         );
     }
 
@@ -63,7 +63,7 @@ public class DeserializerTest {
 
         assertEquals(
             new BooleanWrapper(true),
-            Deserializer.deserialize(new ObjectNode(m), BooleanWrapper.class)
+            new Deserializer().deserialize(new ObjectNode(m), BooleanWrapper.class).get()
         );
     }
 
@@ -83,26 +83,25 @@ public class DeserializerTest {
     public void testDeserializeScalar() throws DeserializationException {
         assertEquals(
             (Integer)1,
-            Deserializer.deserialize(new ScalarNode(1), Integer.class)
+            new Deserializer().deserialize(new ScalarNode(1), Integer.class).get()
         );
 
         assertEquals(
             "hello",
-            Deserializer.deserialize(new ScalarNode("hello"), String.class)
+            new Deserializer().deserialize(new ScalarNode("hello"), String.class).get()
         );
 
         assertEquals(
             true,
-            Deserializer.deserialize(new ScalarNode(true), Boolean.class)
+            new Deserializer().deserialize(new ScalarNode(true), Boolean.class).get()
         );
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void testDeserializeScalarWrongType() throws DeserializationException {
-        assertEquals(
-            true,
-            Deserializer.deserialize(new ScalarNode(true), Integer.class)
-        );
+        Result<Integer> res = new Deserializer().deserialize(new ScalarNode(true), Integer.class);
+        assertTrue(res.hasErrors());
+        assertTrue(res.getErrors().get(0).contains("expected java.lang.Integer but got java.lang.Boolean"));
     }
 
     @Test
@@ -115,8 +114,8 @@ public class DeserializerTest {
         Integer[] arr = {1, 2, 3};
         assertArrayEquals(
             arr, 
-            Deserializer.deserialize(ir, Integer[].class
-        ));
+            new Deserializer().deserialize(ir, Integer[].class).get()
+        );
     }
 
     @Test
@@ -125,8 +124,8 @@ public class DeserializerTest {
         Integer[] arr = {};
         assertArrayEquals(
             arr,
-            Deserializer.deserialize(ir, Integer[].class
-        ));
+            new Deserializer().deserialize(ir, Integer[].class).get()
+        );
     }
 
     @Test
@@ -138,8 +137,8 @@ public class DeserializerTest {
         StringWrapper[] arr = {new StringWrapper("hello"), new StringWrapper("world")};
         assertArrayEquals(
             arr,
-            Deserializer.deserialize(ir, StringWrapper[].class
-        ));
+            new Deserializer().deserialize(ir, StringWrapper[].class).get()
+        );
     }
 
     @Test
@@ -158,8 +157,8 @@ public class DeserializerTest {
                                    new IntegerWrapper(4)}};
         assertArrayEquals(
             arr, 
-            Deserializer.deserialize(ir, IntegerWrapper[][].class
-        ));
+            new Deserializer().deserialize(ir, IntegerWrapper[][].class).get()
+        );
     }
 
     static class InnerClass {
@@ -253,7 +252,7 @@ public class DeserializerTest {
 
         assertEquals(
             ans,
-            Deserializer.deserialize(ir, OuterClass.class)
+            new Deserializer().deserialize(ir, OuterClass.class).get()
         );
     }
 

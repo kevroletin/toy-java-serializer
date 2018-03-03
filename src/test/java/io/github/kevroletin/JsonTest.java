@@ -1,5 +1,6 @@
 package io.github.kevroletin;
 
+import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
 import io.github.kevroletin.json.TestTypes.EmptyObject;
@@ -7,7 +8,9 @@ import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.PrivateConstructor;
 import io.github.kevroletin.json.TestTypes.PrivateField;
-import java.util.Objects;
+import io.github.kevroletin.json.utils.Maybe;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -33,6 +36,86 @@ public class JsonTest {
             Json.toJson(Json.fromJson(str, IntCons.class))
         );
     }
+
+    String threeNestedObjectsJson = 
+          "{\n"
+        + "  \"booleanArray\": [\n"
+        + "    true,\n"
+        + "    false\n"
+        + "  ],\n"
+        + "  \"booleanValue\": true,\n"
+        + "  \"doubleArray\": [\n"
+        + "    1.0,\n"
+        + "    2.0,\n"
+        + "    3.0\n"
+        + "  ],\n"
+        + "  \"doubleValue\": 3.0,\n"
+        + "  \"intArray\": [\n"
+        + "    1,\n"
+        + "    2,\n"
+        + "    3\n"
+        + "  ],\n"
+        + "  \"intValue\": 3,\n"
+        + "  \"object\": {\n"
+        + "    \"booleanArray\": [\n"
+        + "      true,\n"
+        + "      false\n"
+        + "    ],\n"
+        + "    \"booleanValue\": true,\n"
+        + "    \"doubleArray\": [\n"
+        + "      1.0,\n"
+        + "      2.0,\n"
+        + "      3.0\n"
+        + "    ],\n"
+        + "    \"doubleValue\": 1.0,\n"
+        + "    \"intArray\": [\n"
+        + "      1,\n"
+        + "      2,\n"
+        + "      3\n"
+        + "    ],\n"
+        + "    \"intValue\": 1,\n"
+        + "    \"object\": null,\n"
+        + "    \"objectArray\": [],\n"
+        + "    \"stringArray\": [\n"
+        + "      \"hello\",\n"
+        + "      \"world\"\n"
+        + "    ],\n"
+        + "    \"stringValue\": \"one\"\n"
+        + "  },\n"
+        + "  \"objectArray\": [\n"
+        + "    {\n"
+        + "      \"booleanArray\": [\n"
+        + "        true,\n"
+        + "        false\n"
+        + "      ],\n"
+        + "      \"booleanValue\": false,\n"
+        + "      \"doubleArray\": [\n"
+        + "        1.0,\n"
+        + "        2.0,\n"
+        + "        3.0\n"
+        + "      ],\n"
+        + "      \"doubleValue\": 2.0,\n"
+        + "      \"intArray\": [\n"
+        + "        1,\n"
+        + "        2,\n"
+        + "        3\n"
+        + "      ],\n"
+        + "      \"intValue\": 2,\n"
+        + "      \"object\": null,\n"
+        + "      \"objectArray\": [],\n"
+        + "      \"stringArray\": [\n"
+        + "        \"hello\",\n"
+        + "        \"world\"\n"
+        + "      ],\n"
+        + "      \"stringValue\": \"two\"\n"
+        + "    }\n"
+        + "  ],\n"
+        + "  \"stringArray\": [\n"
+        + "    \"hello\",\n"
+        + "    \"world\"\n"
+        + "  ],\n"
+        + "  \"stringValue\": \"three\"\n"
+        + "}";
 
     @Test
     public void testAllTypesObject() throws Exception {
@@ -73,94 +156,14 @@ public class JsonTest {
         obj3.booleanArray = new Boolean[] {true, false};
         obj3.objectArray = new AllSupportedTypesWrapper[] {obj2};
 
-        String str = 
-                "{\n"
-            + "  \"booleanArray\": [\n"
-            + "    true,\n"
-            + "    false\n"
-            + "  ],\n"
-            + "  \"booleanValue\": true,\n"
-            + "  \"doubleArray\": [\n"
-            + "    1.0,\n"
-            + "    2.0,\n"
-            + "    3.0\n"
-            + "  ],\n"
-            + "  \"doubleValue\": 3.0,\n"
-            + "  \"intArray\": [\n"
-            + "    1,\n"
-            + "    2,\n"
-            + "    3\n"
-            + "  ],\n"
-            + "  \"intValue\": 3,\n"
-            + "  \"object\": {\n"
-            + "    \"booleanArray\": [\n"
-            + "      true,\n"
-            + "      false\n"
-            + "    ],\n"
-            + "    \"booleanValue\": true,\n"
-            + "    \"doubleArray\": [\n"
-            + "      1.0,\n"
-            + "      2.0,\n"
-            + "      3.0\n"
-            + "    ],\n"
-            + "    \"doubleValue\": 1.0,\n"
-            + "    \"intArray\": [\n"
-            + "      1,\n"
-            + "      2,\n"
-            + "      3\n"
-            + "    ],\n"
-            + "    \"intValue\": 1,\n"
-            + "    \"object\": null,\n"
-            + "    \"objectArray\": [],\n"
-            + "    \"stringArray\": [\n"
-            + "      \"hello\",\n"
-            + "      \"world\"\n"
-            + "    ],\n"
-            + "    \"stringValue\": \"one\"\n"
-            + "  },\n"
-            + "  \"objectArray\": [\n"
-            + "    {\n"
-            + "      \"booleanArray\": [\n"
-            + "        true,\n"
-            + "        false\n"
-            + "      ],\n"
-            + "      \"booleanValue\": false,\n"
-            + "      \"doubleArray\": [\n"
-            + "        1.0,\n"
-            + "        2.0,\n"
-            + "        3.0\n"
-            + "      ],\n"
-            + "      \"doubleValue\": 2.0,\n"
-            + "      \"intArray\": [\n"
-            + "        1,\n"
-            + "        2,\n"
-            + "        3\n"
-            + "      ],\n"
-            + "      \"intValue\": 2,\n"
-            + "      \"object\": null,\n"
-            + "      \"objectArray\": [],\n"
-            + "      \"stringArray\": [\n"
-            + "        \"hello\",\n"
-            + "        \"world\"\n"
-            + "      ],\n"
-            + "      \"stringValue\": \"two\"\n"
-            + "    }\n"
-            + "  ],\n"
-            + "  \"stringArray\": [\n"
-            + "    \"hello\",\n"
-            + "    \"world\"\n"
-            + "  ],\n"
-            + "  \"stringValue\": \"three\"\n"
-            + "}";
-
         assertEquals(
-            str, 
+            threeNestedObjectsJson, 
             Json.toPrettyJson(obj3)
         );
 
         assertEquals(
-            str,
-            Json.toPrettyJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
+            threeNestedObjectsJson,
+            Json.toPrettyJson(Json.fromJson(threeNestedObjectsJson, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -275,6 +278,48 @@ public class JsonTest {
             str,
             Json.toJson(Json.fromJson(strWithSpaces, AllSupportedTypesWrapper.class))
         );
+    }
+
+    @Test
+    public void testMultipleTypeErrors() throws Exception {
+        String str = "{\"x\":true,\"y\":false}";
+
+        assertEquals(
+            Json.fromJsonNoThrow(str, Point.class),
+            new Result(
+                Maybe.just(new Point(null, null)),
+                Arrays.asList(
+                    "{x} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
+                    "{y} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean"))
+        );
+    }
+
+    @Test
+    public void testMultipleNestedErrors() throws Exception {
+        Result<AllSupportedTypesWrapper> res1 = Json.fromJsonNoThrow(
+            threeNestedObjectsJson.replaceAll("2.0", "true"),
+            AllSupportedTypesWrapper.class
+        );
+
+        List<String> ans1 = Arrays.asList(
+            "{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
+            "{object}{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
+            "{objectArray}[0]{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
+            "{objectArray}[0]{doubleValue} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean");
+        assertEquals(ans1, res1.getErrors());
+
+        Result<AllSupportedTypesWrapper> res2 = Json.fromJsonNoThrow(
+            threeNestedObjectsJson.replaceAll("true", "0"),
+            AllSupportedTypesWrapper.class
+        );
+
+        List<String> ans2 = Arrays.asList(
+            "{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
+            "{booleanValue} Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
+            "{object}{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
+            "{object}{booleanValue} Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
+            "{objectArray}[0]{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer");
+        assertEquals(ans2, res2.getErrors());
     }
 
     @Test
