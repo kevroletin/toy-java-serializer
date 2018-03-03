@@ -4,6 +4,7 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.JsonParser;
+import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.exceptions.SerializationException;
@@ -19,6 +20,10 @@ public class Json {
 
     static public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException {
         INode ast = JsonParser.parse(str);
-        return Deserializer.deserialize(ast, cls);
+        Result<T> res = new Deserializer().deserialize(ast, cls);
+        if (res.hasErrors()) {
+            throw new DeserializationException(String.join("; ", res.getErrors()));
+        }
+        return res.orElse(null);
     }
 }

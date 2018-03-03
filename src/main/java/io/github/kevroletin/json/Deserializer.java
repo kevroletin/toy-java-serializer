@@ -1,6 +1,5 @@
 package io.github.kevroletin.json;
 
-import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
@@ -14,18 +13,28 @@ import java.util.List;
 import java.util.Map;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class Deserializer {
 
-    List<String> errors = new ArrayList();
+    private List<String> errors;
 
-    public static <T> T deserialize(INode ast, Class<T> cls) throws DeserializationException {
+    public Deserializer(List<String> errors) {
+        this.errors = errors;
+    }
+
+    public Deserializer() {
+        errors = new ArrayList();
+    }
+
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    public <T> Result<T> deserialize(INode ast, Class<T> cls) {
         Deserializer d = new Deserializer();
         Maybe res = d.deserializeInternal(ast, cls);
-        if (!d.errors.isEmpty()) {
-            throw new DeserializationException(String.join("; ", d.errors));
-        }
-        return (T) res.orElse(null);
+        return new Result(res, d.errors);
     }
 
     private <T> T createEmptyInstance(Class<T> cls) {
@@ -187,5 +196,35 @@ public class Deserializer {
             return deserializeArray(ast, cls);
         }
         return deserializeObject(ast, cls);
+    }
+
+    @Override
+    public String toString() {
+        return "Deserializer{" + "errors=" + errors + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.errors);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Deserializer other = (Deserializer) obj;
+        if (!Objects.equals(this.errors, other.errors)) {
+            return false;
+        }
+        return true;
     }
 }
