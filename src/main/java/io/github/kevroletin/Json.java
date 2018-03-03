@@ -20,7 +20,8 @@ public class Json {
 
     static public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException 
     {
-        Result<T> res = fromJsonNoThrow(str, cls);
+        INode ast = JsonParser.parse(str);
+        Result<T> res = new Deserializer().deserialize(ast, cls);
         if (res.hasErrors()) {
             throw new DeserializationException(String.join("; ", res.getErrors()));
         }
