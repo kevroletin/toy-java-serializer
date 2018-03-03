@@ -59,7 +59,7 @@ public class Deserializer {
 
     private List<INode> ensureNodeIsArray(INode ast) {
         if (!ast.isArray()) {
-            errors.add(String.format("Expected array or list, got %s", ast.getClass().getName()));
+            errors.add(String.format("Expected array, got %s", ast.getClass().getName()));
             return null;
         }
         return ((ArrayNode)ast).get();

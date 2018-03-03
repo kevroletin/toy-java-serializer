@@ -1,6 +1,8 @@
 package io.github.kevroletin.json;
 
 import io.github.kevroletin.json.utils.Maybe;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -22,6 +24,12 @@ public class Result<T> {
         this.hasValue = result.isJust();
         this.result = result.orElse(null);
         this.errors = errors;
+    }
+
+    public static <T> Result<T> error(String... errors) {
+        List<String> list = new ArrayList();
+        Collections.addAll(list, errors);
+        return new Result(false, null, list);
     }
 
     public boolean hasValue() {

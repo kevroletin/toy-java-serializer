@@ -1,5 +1,6 @@
 package io.github.kevroletin;
 
+import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
 import io.github.kevroletin.json.TestTypes.EmptyObject;
@@ -7,7 +8,6 @@ import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.PrivateConstructor;
 import io.github.kevroletin.json.TestTypes.PrivateField;
-import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
 

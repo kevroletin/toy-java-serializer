@@ -1,10 +1,8 @@
 package io.github.kevroletin.json.annotations;
 
 import io.github.kevroletin.Json;
-import io.github.kevroletin.json.exceptions.DeserializationException;
+import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
-import io.github.kevroletin.json.exceptions.SerializationException;
-import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -69,14 +67,18 @@ class Point {
 public class FieldValidatorTest {
     
     @Test
-    public void testPositeveNumber() throws JsonParsingException, DeserializationException, SerializationException {
-        Point p = Json.fromJson("{\"x\":-1,\"y\":1}", Point.class);
-        assertEquals(new Point(-1, 1), p);
+    public void testPositeveNumber() throws JsonParsingException {
+        Result<Point> p = Json.fromJsonNoThrow("{\"x\":-1,\"y\":1}", Point.class);
+        assertTrue(p.hasValue());
+        assertEquals(new Point(-1, 1), p.get());
     }
     
-    @Test(expected = DeserializationException.class)
-    public void testRejectNegativeNumber() throws JsonParsingException, DeserializationException, SerializationException {
-        Point p = Json.fromJson("{\"x\":1,\"y\":-1}", Point.class);
+    @Test
+    public void testRejectNegativeNumber() throws JsonParsingException {
+        Result<Point> p = Json.fromJsonNoThrow("{\"x\":1,\"y\":-1}", Point.class);
+        assertTrue(p.hasErrors());
+        assertTrue(p.getErrors().get(0).contains(
+            "Validator io.github.kevroletin.json.annotations.PositiveInteger rejected value -1"));
     }
     
 }
