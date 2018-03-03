@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 class PositiveInteger implements ValidationFunction {
     @Override
-    public Boolean validate(Object data) throws ValidationException {
+    public Boolean validate(Object data) {
         return data instanceof Integer && ((Integer)data) > 0;
     }
 
@@ -74,7 +74,7 @@ public class FieldValidatorTest {
         assertEquals(new Point(-1, 1), p);
     }
     
-    @Test(expected = ValidationException.class)
+    @Test(expected = DeserializationException.class)
     public void testRejectNegativeNumber() throws JsonParsingException, DeserializationException, SerializationException {
         Point p = Json.fromJson("{\"x\":1,\"y\":-1}", Point.class);
     }

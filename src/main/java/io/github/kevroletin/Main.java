@@ -1,8 +1,8 @@
 package io.github.kevroletin;
 
 import io.github.kevroletin.json.annotations.FieldValidator;
-import io.github.kevroletin.json.annotations.TypeValidator;
 import io.github.kevroletin.json.annotations.ValidationFunction;
+import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
@@ -40,7 +40,7 @@ class TelephoneNumberStringValidator implements ValidationFunction {
     }
 
     @Override
-    public Boolean validate(Object data) throws ValidationException {
+    public Boolean validate(Object data) {
         if (!(data instanceof String)) { return false; }
         return validateString((String) data);
     }
@@ -49,14 +49,13 @@ class TelephoneNumberStringValidator implements ValidationFunction {
 
 class TelephoneNumberValidator implements ValidationFunction {
     @Override
-    public Boolean validate(Object data) throws ValidationException {
+    public Boolean validate(Object data) {
         if (!(data instanceof TelephoneNumber)) { return false; }
         String value = ((TelephoneNumber)data).value;
         return TelephoneNumberStringValidator.validateString(value);
     }
 }
 
-@TypeValidator(cls = TelephoneNumberValidator.class)
 class TelephoneNumber {
     String value;
 
@@ -209,7 +208,7 @@ public class Main {
                 "}";
             Json.fromJson(str1, User1.class);
         } 
-        catch (ValidationException e) {
+        catch (DeserializationException e) {
             ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberValidator rejected value");
         }
         assert(ok);
@@ -225,7 +224,7 @@ public class Main {
                 "}";
             Json.fromJson(str2, User2.class);
         } 
-        catch (ValidationException e) {
+        catch (DeserializationException e) {
             ok = e.getMessage().contains("Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"
 );
         }
@@ -245,7 +244,7 @@ public class Main {
     static public void main(String[] args) throws JsonException {
         testValidator();
         goodCases();
-        badCase1();
+//        badCase1();
         badCase2();
     }
 }

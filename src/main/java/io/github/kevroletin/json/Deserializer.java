@@ -7,89 +7,107 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
 import io.github.kevroletin.json.annotations.FieldValidator;
 import io.github.kevroletin.json.annotations.ValidationFunction;
-import io.github.kevroletin.json.exceptions.ValidationException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import io.github.kevroletin.json.annotations.TypeValidator;
+import io.github.kevroletin.json.utils.WithErrors;
+import java.util.ArrayList;
 
 public class Deserializer {
 
     public static <T> T deserialize(INode ast, Class<T> cls) throws DeserializationException {
-        return (T) deserializeWoTypecast(ast, cls);
+        WithErrors res = new Deserializer().deserializeInternal(ast, cls);
+        if (res.hasErrors()) {
+            throw new DeserializationException(String.join("; ", res.getErrors()));
+        }
+        if (!res.hasValue()) {
+            return null;
+        }
+        return (T) res.getValue();
     }
 
-    private static <T> T createEmptyInstance(Class<T> cls) throws DeserializationException {
+    private <T> WithErrors<T> createEmptyInstance(Class<T> cls) {
         try {
-            return (T) TypeUtils.getDefaultConstructor(cls).newInstance();
+            return WithErrors.of((T) TypeUtils.getDefaultConstructor(cls).newInstance());
         } catch (Exception e) {
             String msg = String.format(
                 "Failed to create new %s class instance. " +
                 "Public default constructor is not implemented or not accesable.",
                 cls.getName());
-            throw new DeserializationException(msg, e);
+            return WithErrors.errors(msg);
         }
-    }
-    
-    private static Map<String, INode> ensureNodeIsObject(INode ast) throws DeserializationException {
-        if (!ast.isObject()) {
-            throw new DeserializationException(String.format("Expected object, got %s", ast.getClass().getName()));
-        }
-        return ((ObjectNode)ast).get();
     }
 
-    private static List<INode> ensureNodeIsArray(INode ast) throws DeserializationException {
-        if (!ast.isArray()) {
-            throw new DeserializationException(String.format("Expected array or list, got %s", ast.getClass().getName()));
+    private WithErrors<Map<String, INode>> ensureNodeIsObject(INode ast) {
+        if (!ast.isObject()) {
+            return WithErrors.errors(String.format("Expected object, got %s", ast.getClass().getName()));
         }
-        return ((ArrayNode)ast).get();
+        return WithErrors.of(((ObjectNode)ast).get());
     }
-    
-    private static Object deserializeScalar(INode value, Class<?> cls) throws DeserializationException {
+
+    private WithErrors<List<INode>> ensureNodeIsArray(INode ast) {
+        if (!ast.isArray()) {
+            return WithErrors.errors(String.format("Expected array or list, got %s", ast.getClass().getName()));
+        }
+        return WithErrors.of(((ArrayNode)ast).get());
+    }
+
+    private WithErrors<Object> deserializeScalar(INode value, Class<?> cls) {
         if (TypeUtils.isUnsupportedScalar(cls)) {
-            throw new DeserializationException(
+            return WithErrors.errors(
                 String.format("Deserialization into %s class is not supported.", cls.getName()));
         }
         if (value.isNull()) {
-            return null;
+            return WithErrors.of(null);
         } else {
             assert(TypeUtils.isSupportedScalarClass(cls));
             Object res = value.getUnsafe();
             if (!res.getClass().equals(cls)) {
-                throw new DeserializationException(
+                return WithErrors.errors(
                     String.format("Failed to deserialize scalar: expected %s but got %s",
                                   cls.getName(), res.getClass().getName()));
             }
-            return res;
+            return WithErrors.of(res);
         }
     }
 
-    private static Object deserializeArray(INode ast, Class<?> arrCls) throws DeserializationException, ValidationException {
+    private WithErrors<Object> deserializeArray(INode ast, Class<?> arrCls) {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
-        List<INode> astValues = ensureNodeIsArray(ast);
+        WithErrors<List<INode>> astValuesErr = ensureNodeIsArray(ast);
+        if (!astValuesErr.hasValue()) {
+            return astValuesErr.copyErrors(Object.class);
+        }
+
+        List<String> errors = new ArrayList();
+        List<INode> astValues = astValuesErr.getValue();
         Object res = Array.newInstance(elemCls, astValues.size());
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
-            Object val = deserializeWoTypecast(valAst, elemCls);
-            try {
-                Array.set(res, i, val);
-            } catch (IllegalArgumentException e) {
-                throw new DeserializationException(
-                    String.format("Failed to set array element #%d. Expected type %s but got %s",
-                                  i,
-                                  elemCls.getName(),
-                                  val.getClass().getName()));
+            WithErrors<Object> val = deserializeInternal(valAst, elemCls);
+            errors.addAll(val.getErrors());
+            if (val.hasValue()) {
+                try {
+                    Array.set(res, i, val.getValue());
+                } catch (IllegalArgumentException e) {
+                    errors.add(
+                        String.format("Failed to set array element #%d. Expected type %s but got %s",
+                                    i,
+                                    elemCls.getName(),
+                                    val.getClass().getName()));
+                }
             }
         }
 
-        return res;
+        WithErrors<Object> ans = WithErrors.of(res);
+        ans.addAllErrors(errors);
+        return ans;
     }
 
-    private static void validateField(Field field, Object value) throws ValidationException {
+    private String validateField(Field field, Object value) {
         FieldValidator fieldValidator = field.getAnnotation(FieldValidator.class);
         if (fieldValidator != null) {
             ValidationFunction f;
@@ -97,80 +115,80 @@ public class Deserializer {
                 Constructor<?> ctor = TypeUtils.getDefaultConstructor(fieldValidator.cls());
                 f = (ValidationFunction) ctor.newInstance();
             } catch (Exception e) {
-                throw new ValidationException(
-                    String.format("Failed to instantiate %s validator", fieldValidator.cls().getName()));
+                return String.format("Failed to instantiate %s validator", fieldValidator.cls().getName());
             }
             Boolean ok = f.validate(value);
             if (!ok) {
-                throw new ValidationException(
-                    String.format("Validator %s rejected value %s", 
+                return
+                    String.format("Validator %s rejected value %s",
                         fieldValidator.cls().getName(),
                         value.toString()
-                    ));
+                    );
             }
         }
+        return null;
     }
 
-    private static void validateObject(Object obj, Class<?> objCls) throws ValidationException {
-        TypeValidator typeValidator = objCls.getAnnotation(TypeValidator.class);
-        if (typeValidator != null) {
-            ValidationFunction f;
-            try {
-                Constructor<?> ctor = TypeUtils.getDefaultConstructor(typeValidator.cls());
-                f = (ValidationFunction) ctor.newInstance();
-            } catch (Exception e) {
-                throw new ValidationException(
-                    String.format("Failed to instantiate %s validator", typeValidator.cls().getName()));
-            }
-            Boolean ok = f.validate(obj);
-            if (!ok) {
-                throw new ValidationException(
-                    String.format("Validator %s rejected value %s", 
-                        typeValidator.cls().getName(),
-                        obj.toString()
-                    ));
-            }
+    private WithErrors<Object> deserializeObject(INode ast, Class<?> objCls) {
+        WithErrors resObjErr = createEmptyInstance(objCls);
+        if (!resObjErr.hasValue()) {
+            return resObjErr;
         }
-    }
-    
-    private static Object deserializeObject(INode ast, Class<?> objCls) throws DeserializationException {
-        Object resObj = createEmptyInstance(objCls);
-        Map<String, INode> allValues = ensureNodeIsObject(ast);
-        
+        WithErrors<Map<String, INode>> allValuesErr = ensureNodeIsObject(ast);
+        if (!allValuesErr.hasValue()) {
+            return allValuesErr.copyErrors(Object.class);
+        }
+
+        Map<String, INode> allValues = allValuesErr.getValue();
+        Object resObj = resObjErr.getValue();
+        List<String> errors = new ArrayList();
+
         List<Field> allFields = TypeUtils.getAllFields(objCls);
         for (Field field: allFields) {
             String name = field.getName();
             INode val = allValues.get(name);
             // TODO: how about configurable nullable fields?
             if (val == null) {
-                throw new DeserializationException(String.format("%s field is missed in serializer AST", name));
+                errors.add(String.format("%s field is missed in serializer AST", name));
+                continue;
             }
-            Object value = deserializeWoTypecast(val, field.getType()); 
-            validateField(field, value);
+
+            WithErrors<Object> valueErr = deserializeInternal(val, field.getType());
+            errors.addAll(valueErr.getErrors());
+            if (!valueErr.hasValue()) {
+                continue;
+            }
+            Object value = valueErr.getValue();
+
+            String validError = validateField(field, value);
+            if (validError != null) {
+                errors.add(validError);
+            }
+
             try {
                 field.setAccessible(true);
                 field.set(resObj, value);
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                throw new DeserializationException(
+                errors.add(
                     String.format("Failed to set %s field to value of type %s",
                                   field.getName(),
-                                  value.getClass().getName()),
-                    e
-                );
+                                  value.getClass().getName()));
             }
         }
 
-        validateObject(resObj, objCls);
-        return resObj;
+        WithErrors<Object> res = WithErrors.of(resObj);
+        res.addAllErrors(errors);
+        return res;
     }
 
-    private static Object deserializeWoTypecast(INode ast, Class<?> cls) throws DeserializationException {
+    private WithErrors<Object> deserializeInternal(INode ast, Class<?> cls) {
         // TODO: find deserializers using annotations
         if (TypeUtils.isUnsupportedScalarClass(cls)) {
-            throwUnsupportedClass(cls);
+            return WithErrors.errors(
+                String.format("Deserialization of class %s is not supported", cls.getName()));
         }
         if (ast.isNull()) {
-            return null;
+            return WithErrors.of(null);
         }
         if (TypeUtils.isSupportedScalarClass(cls)) {
             return deserializeScalar(ast, cls);
@@ -181,7 +199,7 @@ public class Deserializer {
         return deserializeObject(ast, cls);
     }
 
-    private static void throwUnsupportedClass(Class<?> cls) throws DeserializationException {
+    private void throwUnsupportedClass(Class<?> cls) throws DeserializationException {
         throw new DeserializationException(
             String.format("Deserialization of class %s is not supported", cls.getName()));
     }
