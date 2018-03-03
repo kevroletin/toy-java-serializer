@@ -8,6 +8,9 @@ import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.PrivateConstructor;
 import io.github.kevroletin.json.TestTypes.PrivateField;
+import io.github.kevroletin.json.utils.Maybe;
+import java.util.Arrays;
+import java.util.Optional;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -274,6 +277,20 @@ public class JsonTest {
         assertEquals(
             str,
             Json.toJson(Json.fromJson(strWithSpaces, AllSupportedTypesWrapper.class))
+        );
+    }
+
+    @Test
+    public void testMultipleTypeErrors() throws Exception {
+        String str = "{\"x\":true,\"y\":false}";
+
+        assertEquals(
+            Json.fromJsonNoThrow(str, Point.class),
+            new Result(
+                Maybe.just(new Point(null, null)),
+                Arrays.asList(
+                    "{x} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
+                    "{y} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean"))
         );
     }
 
