@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Objects;
 
 public class Deserializer {
@@ -147,6 +148,8 @@ public class Deserializer {
         }
 
         List<Field> allFields = TypeUtils.getAllFields(objCls);
+        Collections.sort(allFields, (a, b) -> a.getName().compareTo(b.getName()));
+
         for (Field field: allFields) {
             String name = field.getName();
             INode val = allValues.get(name);
