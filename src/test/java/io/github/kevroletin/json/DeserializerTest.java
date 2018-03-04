@@ -101,7 +101,7 @@ public class DeserializerTest {
     public void testDeserializeScalarWrongType() throws DeserializationException {
         Result<Integer> res = new Deserializer().deserialize(new ScalarNode(true), Integer.class);
         assertTrue(res.hasErrors());
-        assertTrue(res.getErrors().get(0).contains("expected java.lang.Integer but got java.lang.Boolean"));
+        assertTrue(res.getErrors().get(0).contains("Expected java.lang.Integer but got java.lang.Boolean"));
     }
 
     @Test

@@ -20,12 +20,82 @@ public class JsonTest {
     }
 
     @Test
-    public void testJsonPoint() throws Exception {
+    public void testJsonTrivialCases() throws Exception {
+        assertEquals((Integer)10, Json.fromJson("10", Integer.class));
+        assertEquals((Double)10.0, Json.fromJson("10.0", Double.class));
+        assertEquals("hello", Json.fromJson("\"hello\"", String.class));
+        assertEquals(true, Json.fromJson("true", Boolean.class));
+    }
+
+    @Test
+    public void testJsonObject() throws Exception {
         String str = "{\"x\":1.0,\"y\":2.0}";
         assertEquals(
             str,
             Json.toJson(Json.fromJson(str, Point.class))
         );
+    }
+
+    @Test 
+    public void testJsonArray() {
+        Result<Boolean[]> res = Json.fromJsonNoThrow("[1, true, 3]", Boolean[].class);
+        assertEquals(
+            Arrays.asList(
+                "[0] Expected java.lang.Boolean but got java.lang.Integer",
+                "[2] Expected java.lang.Boolean but got java.lang.Integer"),
+            res.getErrors()
+        );
+        assertTrue(res.hasValue());
+        assertArrayEquals(new Boolean[] {null, true, null}, res.get());
+    }
+
+    @Test
+    public void testAssignEveryType() throws Exception {
+        class TestData {
+            public Class cls;
+            public Object res;
+            public String json;
+
+            public TestData(Class cls, Object res, String json) {
+                this.cls = cls;
+                this.res = res;
+                this.json = json;
+            }
+        }
+        TestData[] tests = new TestData[] {
+            new TestData(Integer.class, (Integer)10, "10"),
+            new TestData(String.class, "10", "\"10\""),
+            new TestData(Boolean.class, true, "true"),
+            new TestData(Double.class, 10.0, "10.0"),
+            new TestData(Point.class, new Point(1.0, 2.0), "{\"x\":1.0,\"y\":2.0}"),
+            new TestData(Integer[].class, new Integer[] { 10 }, "[10]"),
+            new TestData(String[].class, new String[] { "10" }, "[\"10\"]"),
+            new TestData(Boolean[].class, new Boolean[] { true }, "[true]"),
+            new TestData(Double[].class, new Double[] { 10.0 }, "[10.0]"),
+            new TestData(Point[].class, new Object[] { new Point(1.0, 2.0) }, "[{\"x\":1.0,\"y\":2.0}]")
+        };
+
+        for (TestData to: tests) {
+            for (TestData from: tests) {
+                String msg = String.format("%s - %s", to.cls.toString(), from.cls.toString());
+                if (to != from) {
+                    Result res = Json.fromJsonNoThrow(from.json, to.cls);
+                    assertTrue(res.hasErrors());
+                    assertEquals(1, res.getErrors().size());
+                    System.out.println(res.getErrors().get(0));
+                } else {
+                    if (from.cls.isArray()) {
+                        assertArrayEquals(msg, 
+                            (Object[])from.res, 
+                            (Object[])Json.fromJson(from.json, from.cls) );
+                    } else {
+                        assertEquals(msg, 
+                            from.res, 
+                            Json.fromJson(from.json, from.cls) );
+                    }
+                }
+            }
+        }
     }
 
     @Test
@@ -289,8 +359,8 @@ public class JsonTest {
             new Result(
                 Maybe.just(new Point(null, null)),
                 Arrays.asList(
-                    "{x} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
-                    "{y} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean"))
+                    "{x} Expected java.lang.Double but got java.lang.Boolean",
+                    "{y} Expected java.lang.Double but got java.lang.Boolean"))
         );
     }
 
@@ -302,10 +372,10 @@ public class JsonTest {
         );
 
         List<String> ans1 = Arrays.asList(
-            "{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
-            "{object}{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
-            "{objectArray}[0]{doubleArray}[1] Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean",
-            "{objectArray}[0]{doubleValue} Failed to deserialize scalar: expected java.lang.Double but got java.lang.Boolean");
+            "{doubleArray}[1] Expected java.lang.Double but got java.lang.Boolean",
+            "{object}{doubleArray}[1] Expected java.lang.Double but got java.lang.Boolean",
+            "{objectArray}[0]{doubleArray}[1] Expected java.lang.Double but got java.lang.Boolean",
+            "{objectArray}[0]{doubleValue} Expected java.lang.Double but got java.lang.Boolean");
         assertEquals(ans1, res1.getErrors());
 
         Result<AllSupportedTypesWrapper> res2 = Json.fromJsonNoThrow(
@@ -314,11 +384,11 @@ public class JsonTest {
         );
 
         List<String> ans2 = Arrays.asList(
-            "{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
-            "{booleanValue} Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
-            "{object}{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
-            "{object}{booleanValue} Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer",
-            "{objectArray}[0]{booleanArray}[0] Failed to deserialize scalar: expected java.lang.Boolean but got java.lang.Integer");
+            "{booleanArray}[0] Expected java.lang.Boolean but got java.lang.Integer",
+            "{booleanValue} Expected java.lang.Boolean but got java.lang.Integer",
+            "{object}{booleanArray}[0] Expected java.lang.Boolean but got java.lang.Integer",
+            "{object}{booleanValue} Expected java.lang.Boolean but got java.lang.Integer",
+            "{objectArray}[0]{booleanArray}[0] Expected java.lang.Boolean but got java.lang.Integer");
         assertEquals(ans2, res2.getErrors());
     }
 
