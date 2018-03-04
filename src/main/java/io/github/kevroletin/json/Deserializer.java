@@ -14,43 +14,47 @@ import java.util.Map;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 
 public class Deserializer {
 
-    private List<String> errors;
-
-    public Deserializer(List<String> errors) {
-        this.errors = errors;
+    public <T> Result<T> deserialize(INode ast, Class<T> cls) {
+        List<String> err = new ArrayList();
+        Maybe res = deserialize(err, Location.empty(), ast, cls);
+        return new Result(res, err);
     }
 
-    public Deserializer() {
-        errors = new ArrayList();
+    public Maybe<Object> deserialize(List<String> err, Location loc, INode ast, Class<?> cls) {
+        // TODO: find deserializers using annotations
+        if (TypeUtils.isUnsupportedScalarClass(cls)) {
+            err.add(
+                String.format("Deserialization of class %s is not supported", cls.getName()));
+            return Maybe.nothing();
+        }
+        if (ast.isNull()) {
+            return Maybe.just(null);
+        }
+        if (TypeUtils.isSupportedScalarClass(cls)) {
+            return deserializeScalar(err, loc, ast, cls);
+        }
+        if (TypeUtils.isArrayClass(cls)) {
+            return deserializeArray(err, loc, ast, cls);
+        }
+        return deserializeObject(err, loc, ast, cls);
     }
 
-    private void pushError(Location loc, String frmt, Object... args) {
+    public void pushError(List<String> err, Location loc, String frmt, Object... args) {
         if (loc.isNull()) {
-            errors.add(String.format(frmt, args));
+            err.add(String.format(frmt, args));
         } else {
-            errors.add(loc.toString() + " " + String.format(frmt, args));
+            err.add(loc.toString() + " " + String.format(frmt, args));
         }
     }
 
-    public List<String> getErrors() {
-        return errors;
-    }
-
-    public <T> Result<T> deserialize(INode ast, Class<T> cls) {
-        Deserializer d = new Deserializer();
-        Maybe res = d.deserializeInternal(Location.empty(), ast, cls);
-        return new Result(res, d.errors);
-    }
-
-    private <T> T createEmptyInstance(Location loc, Class<T> cls) {
+    public <T> T createEmptyInstance(List<String> err, Location loc, Class<T> cls) {
         try {
             return (T) TypeUtils.getDefaultConstructor(cls).newInstance();
         } catch (Exception e) {
-            pushError(loc,
+            pushError(err, loc,
                       "Failed to create new %s class instance. " +
                       "Public default constructor is not implemented or not accesable.",
                       cls.getName());
@@ -58,36 +62,35 @@ public class Deserializer {
         }
     }
 
-    private boolean checkClassEquals(Location loc, Class<?> lhs, Class<?> rhs) {
+    public boolean checkClassEquals(List<String> err, Location loc, Class<?> lhs, Class<?> rhs) {
         if (!lhs.equals(rhs)) {
-            pushError(loc, "Expected %s but got %s",
-                            lhs.getName(), rhs.getName());
+            pushError(err, loc, "Expected %s but got %s", lhs.getName(), rhs.getName());
             return false;
         }
         return true;
     }
 
-    private Map<String, INode> ensureNodeIsObject(Location loc, Class<?> cls, INode ast) {
+    public Map<String, INode> ensureNodeIsObject(List<String> err, Location loc, Class<?> cls, INode ast) {
         if (!ast.isObject()) {
-            pushError(loc, "Expected objet %s but got %s", 
-                cls.getName(), ast.getClass().getName());
+            pushError(err, loc, "Expected objet %s but got %s", 
+                      cls.getName(), ast.getClass().getName());
             return null;
         }
         return ((ObjectNode)ast).get();
     }
 
-    private List<INode> ensureNodeIsArray(Location loc, Class<?> cls, INode ast) {
+    public List<INode> ensureNodeIsArray(List<String> err, Location loc, Class<?> cls, INode ast) {
         if (!ast.isArray()) {
-            pushError(loc, "Expected array %s but got %s",
-                cls.getName(), ast.getClass().getName());
+            pushError(err, loc, "Expected array %s but got %s",
+                      cls.getName(), ast.getClass().getName());
             return null;
         }
         return ((ArrayNode)ast).get();
     }
 
-    private Maybe<Object> deserializeScalar(Location loc, INode value, Class<?> cls) {
+    private Maybe<Object> deserializeScalar(List<String> err, Location loc, INode value, Class<?> cls) {
         if (TypeUtils.isUnsupportedScalar(cls)) {
-            pushError(loc, "Deserialization into %s class is not supported.", cls.getName());
+            pushError(err, loc, "Deserialization into %s class is not supported.", cls.getName());
             return Maybe.nothing();
         }
         if (value.isNull()) {
@@ -95,18 +98,18 @@ public class Deserializer {
         } else {
             assert(TypeUtils.isSupportedScalarClass(cls));
             Object res = value.getUnsafe();
-            if (!checkClassEquals(loc, cls, res.getClass())) {
+            if (!checkClassEquals(err, loc, cls, res.getClass())) {
                 return Maybe.nothing();
             }
             return Maybe.just(res);
         }
     }
 
-    private Maybe<Object> deserializeArray(Location arrLoc, INode ast, Class<?> arrCls) {
+    private Maybe<Object> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<?> arrCls) {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
-        List<INode> astValues = ensureNodeIsArray(arrLoc, arrCls, ast);
+        List<INode> astValues = ensureNodeIsArray(err, arrLoc, arrCls, ast);
         if (astValues == null) {
             return Maybe.nothing();
         }
@@ -115,14 +118,14 @@ public class Deserializer {
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
             Location valLoc = arrLoc.addIndex(i);
-            Maybe<Object> val = deserializeInternal(valLoc, valAst, elemCls);
+            Maybe<Object> val = deserialize(err, valLoc, valAst, elemCls);
             if (!val.isJust()) {
                 continue;
             }
             try {
                 Array.set(res, i, val.get());
             } catch (IllegalArgumentException e) {
-                pushError(valLoc,
+                pushError(err, valLoc,
                           "Failed to set value: expected type %s but got %s",
                           i, 
                           elemCls.getName(), 
@@ -132,7 +135,7 @@ public class Deserializer {
         return Maybe.just(res);
     }
 
-    private boolean validateField(Location loc, Field field, Object value) {
+    private boolean validateField(List<String> err, Location loc, Field field, Object value) {
         FieldValidator fieldValidator = field.getAnnotation(FieldValidator.class);
         if (fieldValidator == null) {
             return true;
@@ -141,25 +144,25 @@ public class Deserializer {
         try {
             Constructor<?> ctor = TypeUtils.getDefaultConstructor(fieldValidator.cls());
             f = (ValidationFunction) ctor.newInstance();
-        } catch (Exception e) {
-            pushError(loc, "Failed to instantiate %s validator", fieldValidator.cls().getName());
+        } catch (Exception ex) {
+            pushError(err, loc, "Failed to instantiate %s validator: %s",
+                      fieldValidator.cls().getName(), ex.getMessage());
             return false;
         }
         Boolean ok = f.validate(value);
         if (!ok) {
-            pushError(loc, "Validator %s rejected value %s",
-                           fieldValidator.cls().getName(),
-                           value.toString());
+            pushError(err, loc, "Validator %s rejected value %s",
+                      fieldValidator.cls().getName(), value.toString());
         }
         return ok;
     }
 
-    private Maybe<Object> deserializeObject(Location objLoc, INode ast, Class<?> objCls) {
-        Object resObj = createEmptyInstance(objLoc, objCls);
+    private Maybe<Object> deserializeObject(List<String> err, Location objLoc, INode ast, Class<?> objCls) {
+        Object resObj = createEmptyInstance(err, objLoc, objCls);
         if (resObj == null) {
             return Maybe.nothing();
         }
-        Map<String, INode> allValues = ensureNodeIsObject(objLoc, objCls, ast);
+        Map<String, INode> allValues = ensureNodeIsObject(err, objLoc, objCls, ast);
         if (allValues == null) {
             return Maybe.nothing();
         }
@@ -173,16 +176,16 @@ public class Deserializer {
             Location fieldLoc = objLoc.addField(name);
             // TODO: how about configurable nullable fields?
             if (val == null) {
-                errors.add(String.format("%s field is missed in serializer AST", name));
+                err.add(String.format("%s field is missed in serialized AST", name));
                 continue;
             }
 
-            Maybe<Object> value = deserializeInternal(fieldLoc, val, field.getType());
+            Maybe<Object> value = deserialize(err, fieldLoc, val, field.getType());
             if (value.isNothing()) {
                 continue;
             }
 
-            Boolean ok = validateField(fieldLoc, field, value.get());
+            Boolean ok = validateField(err, fieldLoc, field, value.get());
             if (!ok) {
                 continue;
             }
@@ -191,60 +194,10 @@ public class Deserializer {
                 field.setAccessible(true);
                 field.set(resObj, value.get());
             } catch (IllegalAccessException | IllegalArgumentException e) {
-                pushError(fieldLoc, "Failed to set value: epected type %s but got %s",
-                                    field.getType().getName(),
-                                    value.get().getClass().getName());
+                pushError(err, fieldLoc, "Failed to set value: epected type %s but got %s",
+                          field.getType().getName(), value.get().getClass().getName());
             }
         }
         return Maybe.just(resObj);
-    }
-
-    private Maybe<Object> deserializeInternal(Location loc, INode ast, Class<?> cls) {
-        // TODO: find deserializers using annotations
-        if (TypeUtils.isUnsupportedScalarClass(cls)) {
-            errors.add(
-                String.format("Deserialization of class %s is not supported", cls.getName()));
-            return Maybe.nothing();
-        }
-        if (ast.isNull()) {
-            return Maybe.just(null);
-        }
-        if (TypeUtils.isSupportedScalarClass(cls)) {
-            return deserializeScalar(loc, ast, cls);
-        }
-        if (TypeUtils.isArrayClass(cls)) {
-            return deserializeArray(loc, ast, cls);
-        }
-        return deserializeObject(loc, ast, cls);
-    }
-
-    @Override
-    public String toString() {
-        return "Deserializer{" + "errors=" + errors + '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 79 * hash + Objects.hashCode(this.errors);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Deserializer other = (Deserializer) obj;
-        if (!Objects.equals(this.errors, other.errors)) {
-            return false;
-        }
-        return true;
     }
 }

@@ -82,7 +82,6 @@ public class JsonTest {
                     Result res = Json.fromJsonNoThrow(from.json, to.cls);
                     assertTrue(res.hasErrors());
                     assertEquals(1, res.getErrors().size());
-                    System.out.println(res.getErrors().get(0));
                 } else {
                     if (from.cls.isArray()) {
                         assertArrayEquals(msg, 
