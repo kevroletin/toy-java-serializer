@@ -56,14 +56,10 @@ public class Json {
     }
 
     public Json withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
-        Config newConfig = config.copy();
-        newConfig.typeAdapters.put(cls, adapter);
-        return new Json(newConfig);
+        return new Json(config.withTypeAdapter(cls, adapter));
     }
 
     public Json withoutTypeAdapter(Class<?> cls) {
-        Config newConfig = config.copy();
-        newConfig.typeAdapters.remove(cls);
-        return new Json(newConfig);
+        return new Json(config.withoutTypeAdapter(cls));
     }
 }

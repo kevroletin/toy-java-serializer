@@ -19,6 +19,18 @@ public class Config {
         return new Config(new HashMap(typeAdapters));
     }
 
+    public Config withoutTypeAdapter(Class<?> cls) {
+        Map<Class, TypeAdapter> newAdapters = new HashMap(typeAdapters);
+        newAdapters.remove(cls);
+        return new Config(newAdapters);
+    }
+
+    public Config withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
+        Map<Class, TypeAdapter> newAdapters = new HashMap(typeAdapters);
+        newAdapters.put(cls, adapter);
+        return new Config(newAdapters);
+    }
+
     @Override
     public String toString() {
         return "Config{" + "typeAdapters=" + typeAdapters + '}';

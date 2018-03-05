@@ -4,8 +4,6 @@ import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.annotations.FieldValidator;
-import io.github.kevroletin.json.annotations.ValidationFunction;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -14,6 +12,8 @@ import java.util.Map;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.ArrayList;
 import java.util.Collections;
+import io.github.kevroletin.json.annotations.TypeAdapterFactory;
+import io.github.kevroletin.json.annotations.Adapter;
 
 public class Deserializer {
 
@@ -40,6 +40,10 @@ public class Deserializer {
     }
 
     public <T> Maybe<T> deserialize(List<String> err, Location loc, INode ast, Class<T> cls) {
+        Adapter ann = cls.getAnnotation(Adapter.class);
+        if (ann != null) {
+            return deserializeUsingAdapter(err, loc, ann.cls(), ast, cls);
+        }
         if (config.typeAdapters.containsKey(cls)) {
             return config.typeAdapters.get(cls).deserialize(this, err, loc, ast, cls);
         }
@@ -57,6 +61,14 @@ public class Deserializer {
             return deserializeArray(err, loc, ast, cls);
         }
         return deserializeObject(err, loc, ast, cls);
+    }
+
+    public Deserializer withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
+        return new Deserializer(config.withTypeAdapter(cls, adapter));
+    }
+
+    public Deserializer withoutTypeAdapter(Class<?> cls) {
+        return new Deserializer(config.withoutTypeAdapter(cls));
     }
 
     public void pushError(List<String> err, Location loc, String frmt, Object... args) {
@@ -105,7 +117,7 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
 
-    private <T> Maybe<T> deserializeScalar(List<String> err, Location loc, INode value, Class<T> cls) {
+    public <T> Maybe<T> deserializeScalar(List<String> err, Location loc, INode value, Class<T> cls) {
         if (TypeUtils.isUnsupportedScalar(cls)) {
             pushError(err, loc, "Deserialization into %s class is not supported.", cls.getName());
             return Maybe.nothing();
@@ -122,7 +134,7 @@ public class Deserializer {
         }
     }
 
-    private <T> Maybe<T> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<T> arrCls) {
+    public <T> Maybe<T> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<T> arrCls) {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
@@ -152,29 +164,41 @@ public class Deserializer {
         return Maybe.just((T)res);
     }
 
-    private boolean validateField(List<String> err, Location loc, Field field, Object value) {
-        FieldValidator fieldValidator = field.getAnnotation(FieldValidator.class);
-        if (fieldValidator == null) {
-            return true;
+    private <T> Maybe<T> deserializeUsingAdapter(
+        List<String> err, Location loc, Class<? extends TypeAdapterFactory> factoryCls, INode ast, Class<T> cls) 
+    {
+        if (factoryCls == null) {
+            pushError(err, loc, "@Adapter.cls is null");
+            return Maybe.nothing();
         }
-        ValidationFunction f;
+        TypeAdapterFactory factory;
         try {
-            Constructor<?> ctor = TypeUtils.getDefaultConstructor(fieldValidator.cls());
-            f = (ValidationFunction) ctor.newInstance();
+            Constructor<?> ctor = TypeUtils.getDefaultConstructor(factoryCls);
+            factory = (TypeAdapterFactory) ctor.newInstance();
         } catch (Exception ex) {
-            pushError(err, loc, "Failed to instantiate %s validator: %s",
-                      fieldValidator.cls().getName(), ex.getMessage());
-            return false;
+            pushError(err, loc, "Failed to instantiate TypeAdapter usring %s: %s",
+                      factoryCls.getName(), ex.getMessage());
+            return Maybe.nothing();
         }
-        Boolean ok = f.validate(value);
-        if (!ok) {
-            pushError(err, loc, "Validator %s rejected value %s",
-                      fieldValidator.cls().getName(), value.toString());
+        TypeAdapter adapter = factory.create();
+        if (adapter == null) {
+            pushError(err, loc, "Adapter factory returned null");
+            return Maybe.nothing();
         }
-        return ok;
+        return adapter.deserialize(this, err, loc, ast, cls);
     }
 
-    private <T> Maybe<T> deserializeObject(List<String> err, Location objLoc, INode ast, Class<T> objCls) {
+    public <T> Maybe<T> deserializeConsideringAnnotation(
+        List<String> err, Location loc, Adapter fieldAdapter, INode ast, Class<T> cls) 
+    {
+        if (fieldAdapter == null) {
+            return deserialize(err, loc, ast, cls);
+        } else {
+            return deserializeUsingAdapter(err, loc, fieldAdapter.cls(), ast, cls);
+        }
+    }
+
+    public <T> Maybe<T> deserializeObject(List<String> err, Location objLoc, INode ast, Class<T> objCls) {
         T resObj = createEmptyInstance(err, objLoc, objCls);
         if (resObj == null) {
             return Maybe.nothing();
@@ -197,13 +221,9 @@ public class Deserializer {
                 continue;
             }
 
-            Maybe<?> value = deserialize(err, fieldLoc, val, field.getType());
+            Adapter ann = field.getAnnotation(Adapter.class);
+            Maybe<?> value = deserializeConsideringAnnotation(err, fieldLoc, ann, val, field.getType());
             if (value.isNothing()) {
-                continue;
-            }
-
-            Boolean ok = validateField(err, fieldLoc, field, value.get());
-            if (!ok) {
                 continue;
             }
 

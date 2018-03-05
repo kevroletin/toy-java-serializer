@@ -1,13 +1,13 @@
 package io.github.kevroletin;
 
 import io.github.kevroletin.json.Result;
-import io.github.kevroletin.json.annotations.FieldValidator;
-import io.github.kevroletin.json.annotations.ValidationFunction;
 import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
+import io.github.kevroletin.json.annotations.TypeAdapterFactory;
+import io.github.kevroletin.json.annotations.Adapter;
 
-class TelephoneNumberStringValidator implements ValidationFunction {
+class TelephoneNumberStringValidator implements TypeAdapterFactory {
     public static boolean validateString(String value) {
         if (value.length() == 11) {
             if (!(value.charAt(0) != '7' || value.charAt(0) != '8')) {
@@ -47,7 +47,7 @@ class TelephoneNumberStringValidator implements ValidationFunction {
 }
 
 
-class TelephoneNumberValidator implements ValidationFunction {
+class TelephoneNumberValidator implements TypeAdapterFactory {
     @Override
     public Boolean validate(Object data) {
         if (!(data instanceof TelephoneNumber)) { return false; }
@@ -137,7 +137,7 @@ class User1 {
 }
 
 class User2 {
-    @FieldValidator(cls = TelephoneNumberStringValidator.class)
+    @Adapter(cls = TelephoneNumberStringValidator.class)
     public String number;
 
     public User2(String number) {
