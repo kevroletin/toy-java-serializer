@@ -208,7 +208,14 @@ public class JsonParser {
         Optional<String> expPart = tryParse(this::eatExp);
 
         if (!fracPart.isPresent() && !expPart.isPresent()) {
-            return new ScalarNode(Integer.parseInt(intPart));
+            try {
+                return new ScalarNode(Integer.parseInt(intPart));
+            } 
+            catch (NumberFormatException ex) {
+                throw new JsonParsingException(
+                    String.format("Number %s is too big to be represented as an Integer", intPart)
+                );
+            }
         } else {
             String str = intPart + fracPart.orElse("") + expPart.orElse("");
             return new ScalarNode(Double.parseDouble(str));
