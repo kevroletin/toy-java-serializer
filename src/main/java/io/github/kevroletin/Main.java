@@ -1,240 +1,79 @@
 package io.github.kevroletin;
 
-import io.github.kevroletin.json.Result;
-import io.github.kevroletin.json.exceptions.ValidationException;
-import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
-import io.github.kevroletin.json.annotations.TypeAdapterFactory;
 import io.github.kevroletin.json.annotations.Adapter;
 
-class TelephoneNumberStringValidator implements TypeAdapterFactory {
-    public static boolean validateString(String value) {
-        if (value.length() == 11) {
-            if (!(value.charAt(0) != '7' || value.charAt(0) != '8')) {
-                return false;
-            } 
-            for (int i = 1; i < value.length(); ++i) {
-                if (!Character.isDigit(value.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        if (value.length() == 12) {
-            if (value.charAt(0) != '+') {
-                return false;
-            }
-            if (!(value.charAt(1) != '7' || value.charAt(1) != '8')) {
-                return false;
-            } 
-            for (int i = 2; i < value.length(); ++i) {
-                if (!Character.isDigit(value.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    @Override
-    public Boolean validate(Object data) {
-        if (!(data instanceof String)) { return false; }
-        return validateString((String) data);
-    }
-}
-
-
-class TelephoneNumberValidator implements TypeAdapterFactory {
-    @Override
-    public Boolean validate(Object data) {
-        if (!(data instanceof TelephoneNumber)) { return false; }
-        String value = ((TelephoneNumber)data).value;
-        return TelephoneNumberStringValidator.validateString(value);
-    }
-}
-
-class TelephoneNumber {
-    String value;
-
-    public TelephoneNumber(String value) {
-        this.value = value;
-    }
-
-    public TelephoneNumber() {}
-    
-    @Override
-    public String toString() {
-        return "TelephoneNumber{" + "value=" + value + '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + Objects.hashCode(this.value);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TelephoneNumber other = (TelephoneNumber) obj;
-        if (!Objects.equals(this.value, other.value)) {
-            return false;
-        }
-        return true;
-    }
-}
-
 class User1 {
-    public TelephoneNumber number;
+    @Adapter(cls = TelephoneNumber.TelephoneNumberType.class)
+    public TelephoneNumber typesafeNumber;
 
-    public User1(TelephoneNumber number) {
-        this.number = number;
-    }
+    @Adapter(cls = TelephoneNumber.TelephoneAsStringType.class)
+    public String strNumber;
 
-    User1() {}
+    public User1() {}
 
     @Override
     public String toString() {
-        return "User1{" + "number=" + number + '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 3;
-        hash = 97 * hash + Objects.hashCode(this.number);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final User1 other = (User1) obj;
-        if (!Objects.equals(this.number, other.number)) {
-            return false;
-        }
-        return true;
+        return "User1{" + "typesafeNumber=" + typesafeNumber + ", strNumber=" + strNumber + '}';
     }
 }
 
 class User2 {
-    @Adapter(cls = TelephoneNumberStringValidator.class)
-    public String number;
+    public TelephoneNumber typesafeNumber;
 
-    public User2(String number) {
-        this.number = number;
-    }
+    public String strNumber;
 
-    User2() {}
+    public User2() {}
 
     @Override
     public String toString() {
-        return "User2{" + "number=" + number + '}';
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 89 * hash + Objects.hashCode(this.number);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final User2 other = (User2) obj;
-        if (!Objects.equals(this.number, other.number)) {
-            return false;
-        }
-        return true;
+        return "User1{" + "typesafeNumber=" + typesafeNumber + ", strNumber=" + strNumber + '}';
     }
 }
 
 public class Main {
-    static void goodCases() throws JsonException {
-        User1 u1 = new User1(new TelephoneNumber("+70123456789"));
-        String str1 = "{\n" +
-                      "  \"number\": {\n" +
-                      "    \"value\": \"+70123456789\"\n" +
-                      "  }\n" +
-                      "}";
-        assert(new Json().toPrettyJson(u1).equals(str1));
-        assert(new Json().toPrettyJson(new Json().fromJson(str1, User1.class)).equals(str1));
-
-        User2 u2 = new User2("+70123456789");
-        String str2 = "{\n" +
-                      "  \"number\": \"+70123456789\"\n" +
-                      "}";
-        assert(new Json().toPrettyJson(u2).equals(str2));
-        assert(new Json().toPrettyJson(new Json().fromJson(str2, User2.class)).equals(str2));
-    }
-
-    static void badCase1() throws JsonException {
-        User1 u1 = new User1(new TelephoneNumber("23456789"));
-        String str1 =
-            "{\n" +
-            "  \"number\": {\n" +
-            "    \"value\": \"23456789\"\n" +
-            "  }\n" +
-            "}";
-        Result<User1> res = new Json().fromJsonNoThrow(str1, User1.class);
-        assert(res.getErrors().get(0).contains(
-            "Validator io.github.kevroletin.TelephoneNumberValidator rejected value"));
-    }
-
-    static void badCase2() throws JsonException {
-        User2 u2 = new User2("+70123456789");
-        String str2 =
-            "{\n" +
-            "  \"number\": \"23456789\"\n" +
-            "}";
-        Result<User2> res = new Json().fromJsonNoThrow(str2, User2.class);
-        assert(res.hasErrors());
-        assert(res.getErrors().get(0).contains(
-            "Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"));
-    }
-
-    static public void testValidator() throws ValidationException {
-        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("+70123456789")) );
-        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("+80123456789")) );
-        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("70123456789")) );
-        assert( new TelephoneNumberValidator().validate(new TelephoneNumber("80123456789")) );
-        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber("0123456789"))) );
-        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber(""))) );
-        assert( !(new TelephoneNumberValidator().validate(new TelephoneNumber("abc"))) );
-    }
-
     static public void main(String[] args) throws JsonException {
-        testValidator();
-        goodCases();
-//        badCase1();
-        badCase2();
+        System.out.println(new Json().fromJson(
+            "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"81234567890\"}",
+            User1.class
+        ));
+
+        assert(
+            new Json().fromJsonNoThrow(
+                "{\"typesafeNumber\": \"bad\", \"strNumber\": \"81234567890\"}",
+                User1.class
+            ).hasErrors()
+        );
+
+        assert(
+            new Json().fromJsonNoThrow(
+                "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"bad\"}",
+                User1.class
+            ).hasErrors()
+        );
+
+        Json json = new JsonBuilder()
+                    .typeAdapter(String.class, new TelephoneNumber.TelephoneAsStringSanitizer())
+                    .typeAdapter(TelephoneNumber.class, new TelephoneNumber.TelephoneNumberAdapter())
+                    .build();
+
+        System.out.println(json.fromJson(
+            "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"81234567890\"}",
+            User2.class
+        ));
+
+        assert(
+            json.fromJsonNoThrow(
+                "{\"typesafeNumber\": \"bad\", \"strNumber\": \"81234567890\"}",
+                User1.class
+            ).hasErrors()
+        );
+
+        assert(
+            json.fromJsonNoThrow(
+                "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"bad\"}",
+                User1.class
+            ).hasErrors()
+        );
     }
 }

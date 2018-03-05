@@ -8,7 +8,7 @@ import java.util.Map;
 public class JsonBuilder {
     Map<Class, TypeAdapter> adapters = new HashMap();
 
-    public <T> JsonBuilder typeAdapter(Class<T> cls, TypeAdapter<T> adapter) {
+    public JsonBuilder typeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
         if (cls == null) {
             throw new RuntimeException("cls parameter shouldn't be null");
         }

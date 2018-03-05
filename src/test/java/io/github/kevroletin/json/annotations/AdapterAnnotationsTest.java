@@ -29,10 +29,10 @@ class PositiveIntegerAdapter implements TypeAdapter<Integer> {
 
 }
 
-class PositiveIntegerValidator implements TypeAdapterFactory {
+class PositiveIntegerValidator implements TypeAdapterFactory<PositiveIntegerAdapter> {
 
     @Override
-    public TypeAdapter create() {
+    public PositiveIntegerAdapter create() {
         return new PositiveIntegerAdapter();
     }
 
@@ -61,10 +61,10 @@ class PointInCircleAdapter implements TypeAdapter<Point> {
 
 }
 
-class PointInCircle10Validator implements TypeAdapterFactory {
+class PointInCircle10Validator implements TypeAdapterFactory<PointInCircleAdapter> {
 
     @Override
-    public TypeAdapter create() {
+    public PointInCircleAdapter create() {
         return new PointInCircleAdapter(10);
     }
 

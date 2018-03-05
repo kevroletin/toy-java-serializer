@@ -171,7 +171,7 @@ public class Deserializer {
             pushError(err, loc, "@Adapter.cls is null");
             return Maybe.nothing();
         }
-        TypeAdapterFactory factory;
+        TypeAdapterFactory<TypeAdapter<T>> factory;
         try {
             Constructor<?> ctor = TypeUtils.getDefaultConstructor(factoryCls);
             factory = (TypeAdapterFactory) ctor.newInstance();
@@ -180,7 +180,7 @@ public class Deserializer {
                       factoryCls.getName(), ex.getMessage());
             return Maybe.nothing();
         }
-        TypeAdapter adapter = factory.create();
+        TypeAdapter<T> adapter = factory.create();
         if (adapter == null) {
             pushError(err, loc, "Adapter factory returned null");
             return Maybe.nothing();
