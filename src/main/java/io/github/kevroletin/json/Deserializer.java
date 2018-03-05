@@ -17,17 +17,34 @@ import java.util.Collections;
 
 public class Deserializer {
 
+    final Config config;
+
+    public Deserializer(Config config) {
+        this.config = config;
+    }
+
+    public Deserializer() {
+        config = new Config();
+    }
+
     public <T> Result<T> deserialize(INode ast, Class<T> cls) {
         List<String> err = new ArrayList();
         Maybe res = deserialize(err, Location.empty(), ast, cls);
         return new Result(res, err);
     }
 
-    public Maybe<Object> deserialize(List<String> err, Location loc, INode ast, Class<?> cls) {
-        // TODO: find deserializers using annotations
+    public <T> Result<T> deserialize(Location loc, INode ast, Class<T> cls) {
+        List<String> err = new ArrayList();
+        Maybe res = deserialize(err, loc, ast, cls);
+        return new Result(res, err);
+    }
+
+    public <T> Maybe<T> deserialize(List<String> err, Location loc, INode ast, Class<T> cls) {
+        if (config.typeAdapters.containsKey(cls)) {
+            return config.typeAdapters.get(cls).deserialize(this, err, loc, ast, cls);
+        }
         if (TypeUtils.isUnsupportedScalarClass(cls)) {
-            err.add(
-                String.format("Deserialization of class %s is not supported", cls.getName()));
+            pushError(err, loc, "Deserialization of class %s is not supported", cls.getName());
             return Maybe.nothing();
         }
         if (ast.isNull()) {
@@ -88,7 +105,7 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
 
-    private Maybe<Object> deserializeScalar(List<String> err, Location loc, INode value, Class<?> cls) {
+    private <T> Maybe<T> deserializeScalar(List<String> err, Location loc, INode value, Class<T> cls) {
         if (TypeUtils.isUnsupportedScalar(cls)) {
             pushError(err, loc, "Deserialization into %s class is not supported.", cls.getName());
             return Maybe.nothing();
@@ -97,7 +114,7 @@ public class Deserializer {
             return Maybe.just(null);
         } else {
             assert(TypeUtils.isSupportedScalarClass(cls));
-            Object res = value.getUnsafe();
+            T res = (T) value.getUnsafe();
             if (!checkClassEquals(err, loc, cls, res.getClass())) {
                 return Maybe.nothing();
             }
@@ -105,7 +122,7 @@ public class Deserializer {
         }
     }
 
-    private Maybe<Object> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<?> arrCls) {
+    private <T> Maybe<T> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<T> arrCls) {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
 
@@ -118,7 +135,7 @@ public class Deserializer {
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
             Location valLoc = arrLoc.addIndex(i);
-            Maybe<Object> val = deserialize(err, valLoc, valAst, elemCls);
+            Maybe<?> val = deserialize(err, valLoc, valAst, elemCls);
             if (!val.isJust()) {
                 continue;
             }
@@ -132,7 +149,7 @@ public class Deserializer {
                           val.get().getClass().getName());
             }
         }
-        return Maybe.just(res);
+        return Maybe.just((T)res);
     }
 
     private boolean validateField(List<String> err, Location loc, Field field, Object value) {
@@ -157,8 +174,8 @@ public class Deserializer {
         return ok;
     }
 
-    private Maybe<Object> deserializeObject(List<String> err, Location objLoc, INode ast, Class<?> objCls) {
-        Object resObj = createEmptyInstance(err, objLoc, objCls);
+    private <T> Maybe<T> deserializeObject(List<String> err, Location objLoc, INode ast, Class<T> objCls) {
+        T resObj = createEmptyInstance(err, objLoc, objCls);
         if (resObj == null) {
             return Maybe.nothing();
         }
@@ -176,11 +193,11 @@ public class Deserializer {
             Location fieldLoc = objLoc.addField(name);
             // TODO: how about configurable nullable fields?
             if (val == null) {
-                err.add(String.format("%s field is missed in serialized AST", name));
+                pushError(err, fieldLoc, "%s field is missed in serialized AST", name);
                 continue;
             }
 
-            Maybe<Object> value = deserialize(err, fieldLoc, val, field.getType());
+            Maybe<?> value = deserialize(err, fieldLoc, val, field.getType());
             if (value.isNothing()) {
                 continue;
             }

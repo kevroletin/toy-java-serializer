@@ -1,5 +1,8 @@
 package io.github.kevroletin;
 
+import io.github.kevroletin.json.AST.INode;
+import io.github.kevroletin.json.Deserializer;
+import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
@@ -8,6 +11,8 @@ import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.PrivateConstructor;
 import io.github.kevroletin.json.TestTypes.PrivateField;
+import io.github.kevroletin.json.TypeAdapter;
+import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.Arrays;
 import java.util.List;
@@ -21,10 +26,10 @@ public class JsonTest {
 
     @Test
     public void testJsonTrivialCases() throws Exception {
-        assertEquals((Integer)10, Json.fromJson("10", Integer.class));
-        assertEquals((Double)10.0, Json.fromJson("10.0", Double.class));
-        assertEquals("hello", Json.fromJson("\"hello\"", String.class));
-        assertEquals(true, Json.fromJson("true", Boolean.class));
+        assertEquals((Integer)10, new Json().fromJson("10", Integer.class));
+        assertEquals((Double)10.0, new Json().fromJson("10.0", Double.class));
+        assertEquals("hello", new Json().fromJson("\"hello\"", String.class));
+        assertEquals(true, new Json().fromJson("true", Boolean.class));
     }
 
     @Test
@@ -32,13 +37,13 @@ public class JsonTest {
         String str = "{\"x\":1.0,\"y\":2.0}";
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, Point.class))
+            new Json().toJson(new Json().fromJson(str, Point.class))
         );
     }
 
     @Test 
     public void testJsonArray() {
-        Result<Boolean[]> res = Json.fromJsonNoThrow("[1, true, 3]", Boolean[].class);
+        Result<Boolean[]> res = new Json().fromJsonNoThrow("[1, true, 3]", Boolean[].class);
         assertEquals(
             Arrays.asList(
                 "[0] Expected java.lang.Boolean but got java.lang.Integer",
@@ -79,18 +84,18 @@ public class JsonTest {
             for (TestData from: tests) {
                 String msg = String.format("%s - %s", to.cls.toString(), from.cls.toString());
                 if (to != from) {
-                    Result res = Json.fromJsonNoThrow(from.json, to.cls);
+                    Result res = new Json().fromJsonNoThrow(from.json, to.cls);
                     assertTrue(res.hasErrors());
                     assertEquals(1, res.getErrors().size());
                 } else {
                     if (from.cls.isArray()) {
                         assertArrayEquals(msg, 
                             (Object[])from.res, 
-                            (Object[])Json.fromJson(from.json, from.cls) );
+                            (Object[])new Json().fromJson(from.json, from.cls) );
                     } else {
                         assertEquals(msg, 
                             from.res, 
-                            Json.fromJson(from.json, from.cls) );
+                            new Json().fromJson(from.json, from.cls) );
                     }
                 }
             }
@@ -102,7 +107,7 @@ public class JsonTest {
         String str = "{\"next\":{\"next\":null,\"value\":2},\"value\":1}";
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, IntCons.class))
+            new Json().toJson(new Json().fromJson(str, IntCons.class))
         );
     }
 
@@ -227,12 +232,12 @@ public class JsonTest {
 
         assertEquals(
             threeNestedObjectsJson, 
-            Json.toPrettyJson(obj3)
+            new Json().toPrettyJson(obj3)
         );
 
         assertEquals(
             threeNestedObjectsJson,
-            Json.toPrettyJson(Json.fromJson(threeNestedObjectsJson, AllSupportedTypesWrapper.class))
+            new Json().toPrettyJson(new Json().fromJson(threeNestedObjectsJson, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -255,12 +260,12 @@ public class JsonTest {
 
         assertEquals(
             str, 
-            Json.toJson(obj1)
+            new Json().toJson(obj1)
         );
 
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
+            new Json().toJson(new Json().fromJson(str, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -283,12 +288,12 @@ public class JsonTest {
 
         assertEquals(
             str, 
-            Json.toJson(obj1)
+            new Json().toJson(obj1)
         );
 
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
+            new Json().toJson(new Json().fromJson(str, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -311,12 +316,12 @@ public class JsonTest {
 
         assertEquals(
             str, 
-            Json.toJson(obj1)
+            new Json().toJson(obj1)
         );
 
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, AllSupportedTypesWrapper.class))
+            new Json().toJson(new Json().fromJson(str, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -340,12 +345,12 @@ public class JsonTest {
 
         assertEquals(
             str, 
-            Json.toJson(obj1)
+            new Json().toJson(obj1)
         );
 
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(strWithSpaces, AllSupportedTypesWrapper.class))
+            new Json().toJson(new Json().fromJson(strWithSpaces, AllSupportedTypesWrapper.class))
         );
     }
 
@@ -354,7 +359,7 @@ public class JsonTest {
         String str = "{\"x\":true,\"y\":false}";
 
         assertEquals(
-            Json.fromJsonNoThrow(str, Point.class),
+            new Json().fromJsonNoThrow(str, Point.class),
             new Result(
                 Maybe.just(new Point(null, null)),
                 Arrays.asList(
@@ -365,7 +370,7 @@ public class JsonTest {
 
     @Test
     public void testMultipleNestedErrors() throws Exception {
-        Result<AllSupportedTypesWrapper> res1 = Json.fromJsonNoThrow(
+        Result<AllSupportedTypesWrapper> res1 = new Json().fromJsonNoThrow(
             threeNestedObjectsJson.replaceAll("2.0", "true"),
             AllSupportedTypesWrapper.class
         );
@@ -377,7 +382,7 @@ public class JsonTest {
             "{objectArray}[0]{doubleValue} Expected java.lang.Double but got java.lang.Boolean");
         assertEquals(ans1, res1.getErrors());
 
-        Result<AllSupportedTypesWrapper> res2 = Json.fromJsonNoThrow(
+        Result<AllSupportedTypesWrapper> res2 = new Json().fromJsonNoThrow(
             threeNestedObjectsJson.replaceAll("true", "0"),
             AllSupportedTypesWrapper.class
         );
@@ -393,27 +398,27 @@ public class JsonTest {
 
     @Test
     public void testEmptyObject() throws Exception {
-        assertEquals("{}", Json.toJson(Json.fromJson("{}", EmptyObject.class)));
+        assertEquals("{}", new Json().toJson(new Json().fromJson("{}", EmptyObject.class)));
     }
 
     @Test(expected = DeserializationException.class)
     public void testMissedFields() throws Exception {
         String str = "{\"x\":1.0}";
-        Json.toJson(Json.fromJson(str, Point.class));
+        new Json().toJson(new Json().fromJson(str, Point.class));
     }
 
     public class Nested { }
 
     @Test(expected = DeserializationException.class)
     public void testNestedObject() throws Exception {
-        Json.toJson(Json.fromJson("{}", Nested.class));
+        new Json().toJson(new Json().fromJson("{}", Nested.class));
     }
 
     static class NestedStatic { }
 
     @Test()
     public void testNestedStaticObject() throws Exception {
-        Json.toJson(Json.fromJson("{}", NestedStatic.class));
+        new Json().toJson(new Json().fromJson("{}", NestedStatic.class));
     }
 
     static class UnboxedField {
@@ -422,7 +427,7 @@ public class JsonTest {
 
     @Test(expected = DeserializationException.class)
     public void testUnboxedField() throws Exception {
-        Json.toJson(Json.fromJson("{\"value\": 10}", UnboxedField.class));
+        new Json().toJson(new Json().fromJson("{\"value\": 10}", UnboxedField.class));
     }
 
     static class Father {
@@ -453,7 +458,7 @@ public class JsonTest {
         String str = "{\"value\":10}";
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, Child.class))
+            new Json().toJson(new Json().fromJson(str, Child.class))
         );
     }
 
@@ -463,7 +468,7 @@ public class JsonTest {
         String str = "{\"value\":10}";
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, PrivateField.class))
+            new Json().toJson(new Json().fromJson(str, PrivateField.class))
         );
     }
 
@@ -473,7 +478,47 @@ public class JsonTest {
         String str = "{\"value\":10}";
         assertEquals(
             str,
-            Json.toJson(Json.fromJson(str, PrivateConstructor.class))
+            new Json().toJson(new Json().fromJson(str, PrivateConstructor.class))
+        );
+    }
+
+    class FailureTypeAdapter implements TypeAdapter {
+
+        @Override
+        public Maybe deserialize(Deserializer d, List err, Location loc, INode ast, Class cls) {
+            d.pushError(err, loc, "Test failure");
+            return Maybe.nothing();
+        }
+
+    }
+
+    @Test()
+    public void testWithTypeAdapters() throws JsonParsingException, DeserializationException {
+        assertEquals((Integer)1, new Json().fromJson("1", Integer.class));
+
+        assertTrue(
+            new Json()
+                .withTypeAdapter(Integer.class, new FailureTypeAdapter())
+                .fromJsonNoThrow("1", Integer.class)
+                .hasErrors()
+        );
+    }
+
+    @Test()
+    public void testWithoutTypeAdapters() throws JsonParsingException, DeserializationException {
+        Json json = new JsonBuilder()
+                        .typeAdapter(Integer.class, new FailureTypeAdapter())
+                        .build();
+
+        assertTrue(
+            json.fromJsonNoThrow("1", Integer.class)
+                .hasErrors()
+        );
+
+        assertEquals(
+            (Integer)1, 
+            json.withoutTypeAdapter(Integer.class)
+                .fromJson("1", Integer.class)
         );
     }
 }

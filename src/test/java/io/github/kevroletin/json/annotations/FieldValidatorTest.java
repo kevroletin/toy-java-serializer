@@ -68,14 +68,14 @@ public class FieldValidatorTest {
     
     @Test
     public void testPositeveNumber() throws JsonParsingException {
-        Result<Point> p = Json.fromJsonNoThrow("{\"x\":-1,\"y\":1}", Point.class);
+        Result<Point> p = new Json().fromJsonNoThrow("{\"x\":-1,\"y\":1}", Point.class);
         assertTrue(p.hasValue());
         assertEquals(new Point(-1, 1), p.get());
     }
     
     @Test
     public void testRejectNegativeNumber() throws JsonParsingException {
-        Result<Point> p = Json.fromJsonNoThrow("{\"x\":1,\"y\":-1}", Point.class);
+        Result<Point> p = new Json().fromJsonNoThrow("{\"x\":1,\"y\":-1}", Point.class);
         assertTrue(p.hasErrors());
         assertTrue(p.getErrors().get(0).contains(
             "Validator io.github.kevroletin.json.annotations.PositiveInteger rejected value -1"));

@@ -3,7 +3,6 @@ package io.github.kevroletin;
 import io.github.kevroletin.json.Result;
 import io.github.kevroletin.json.annotations.FieldValidator;
 import io.github.kevroletin.json.annotations.ValidationFunction;
-import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.ValidationException;
 import java.util.Objects;
 import io.github.kevroletin.json.exceptions.JsonException;
@@ -186,15 +185,15 @@ public class Main {
                       "    \"value\": \"+70123456789\"\n" +
                       "  }\n" +
                       "}";
-        assert(Json.toPrettyJson(u1).equals(str1));
-        assert(Json.toPrettyJson(Json.fromJson(str1, User1.class)).equals(str1));
+        assert(new Json().toPrettyJson(u1).equals(str1));
+        assert(new Json().toPrettyJson(new Json().fromJson(str1, User1.class)).equals(str1));
 
         User2 u2 = new User2("+70123456789");
         String str2 = "{\n" +
                       "  \"number\": \"+70123456789\"\n" +
                       "}";
-        assert(Json.toPrettyJson(u2).equals(str2));
-        assert(Json.toPrettyJson(Json.fromJson(str2, User2.class)).equals(str2));
+        assert(new Json().toPrettyJson(u2).equals(str2));
+        assert(new Json().toPrettyJson(new Json().fromJson(str2, User2.class)).equals(str2));
     }
 
     static void badCase1() throws JsonException {
@@ -205,7 +204,7 @@ public class Main {
             "    \"value\": \"23456789\"\n" +
             "  }\n" +
             "}";
-        Result<User1> res = Json.fromJsonNoThrow(str1, User1.class);
+        Result<User1> res = new Json().fromJsonNoThrow(str1, User1.class);
         assert(res.getErrors().get(0).contains(
             "Validator io.github.kevroletin.TelephoneNumberValidator rejected value"));
     }
@@ -216,7 +215,7 @@ public class Main {
             "{\n" +
             "  \"number\": \"23456789\"\n" +
             "}";
-        Result<User2> res = Json.fromJsonNoThrow(str2, User2.class);
+        Result<User2> res = new Json().fromJsonNoThrow(str2, User2.class);
         assert(res.hasErrors());
         assert(res.getErrors().get(0).contains(
             "Validator io.github.kevroletin.TelephoneNumberStringValidator rejected value"));

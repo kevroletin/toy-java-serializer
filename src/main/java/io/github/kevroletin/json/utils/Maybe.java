@@ -2,7 +2,9 @@ package io.github.kevroletin.json.utils;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 // Similar to Optional but can contain null value
 public class Maybe<T> {
@@ -43,6 +45,13 @@ public class Maybe<T> {
             return value;
         }
         return fallback;
+    }
+
+    public <X extends Throwable> T orElseThrow(Supplier<? extends X> ex) throws X {
+        if (!hasValue) {
+            throw ex.get();
+        }
+        return value;
     }
 
     public T get() {

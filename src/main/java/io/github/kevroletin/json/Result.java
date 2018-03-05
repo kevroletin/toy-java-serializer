@@ -58,9 +58,20 @@ public class Result<T> {
         return errors;
     }
 
+    public <N> Result<N> copyErrors(Class<N> cls) {
+        return new Result(false, null, errors);
+    }
+
     @Override
     public String toString() {
         return "Result{" + "hasValue=" + hasValue + ", result=" + result + ", errors=" + errors + '}';
+    }
+
+    public Maybe<T> toMaybe() {
+        if (hasValue) {
+            return Maybe.just(result);
+        }
+        return Maybe.nothing();
     }
 
     @Override
