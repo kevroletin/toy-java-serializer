@@ -19,11 +19,7 @@ public class TypeUtils {
     }
     
     static public boolean isSupportedScalar(Object x) {
-        return isNull(x)
-            || isDouble(x)
-            || isInteger(x)
-            || isString(x)
-            || isBoolean(x);
+        return x == null || isSupportedScalarClass(x.getClass());
     }
 
     static public boolean isSupportedScalarClass(Class<?> cls) {
@@ -34,11 +30,7 @@ public class TypeUtils {
     }
     
     static public boolean isUnsupportedScalar(Object x) {
-        return x instanceof Float
-            || x instanceof Short
-            || x instanceof Long
-            || x instanceof Byte
-            || x instanceof Character;
+        return x != null && isUnsupportedScalarClass(x.getClass());
     }
     
     static public boolean isUnsupportedScalarClass(Class<?> cls) {
@@ -51,10 +43,6 @@ public class TypeUtils {
             || cls == Long.class
             || cls == Byte.class
             || cls == Character.class;
-    }
-
-    static public boolean isNull(Object x) {
-        return x == null;
     }
 
     static public boolean isDouble(Object x) {

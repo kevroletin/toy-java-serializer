@@ -4,10 +4,10 @@ import io.github.kevroletin.json.exceptions.JsonException;
 import io.github.kevroletin.json.annotations.Adapter;
 
 class User1 {
-    @Adapter(cls = TelephoneNumber.TelephoneNumberType.class)
+    @Adapter(cls = TelephoneNumber.TelephoneNumberAdapterFactory.class)
     public TelephoneNumber typesafeNumber;
 
-    @Adapter(cls = TelephoneNumber.TelephoneAsStringType.class)
+    @Adapter(cls = TelephoneNumber.TelephoneAsStringAdapterFactory.class)
     public String strNumber;
 
     public User1() {}

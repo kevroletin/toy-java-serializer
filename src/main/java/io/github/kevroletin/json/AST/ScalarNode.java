@@ -19,7 +19,7 @@ public class ScalarNode implements INode {
 
     @Override
     public boolean isNull() {
-        return TypeUtils.isNull(child);
+        return child == null;
     }
 
     @Override
