@@ -5,18 +5,20 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.Result;
+import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 class PositiveIntegerAdapter implements TypeAdapter<Integer> {
 
     @Override
-    public Maybe<Integer> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<?> cls) {
+    public Maybe<Integer> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<Integer> cls) {
         Maybe<Integer> res = d.deserialize(err, loc, ast, Integer.class);
         if (res.isNothing()) {
             return Maybe.nothing();
@@ -47,7 +49,7 @@ class PointInCircleAdapter implements TypeAdapter<Point> {
     }
 
     @Override
-    public Maybe<Point> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<?> cls) {
+    public Maybe<Point> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<Point> cls) {
         Maybe<Point> point = d.deserializeObject(err, loc, ast, Point.class);
         if (point.isJust()) {
             Integer x = point.get().x;

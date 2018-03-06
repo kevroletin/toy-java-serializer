@@ -21,7 +21,7 @@ public class SerializerTest {
     public void testSerializeArray() throws Exception {
         String[] strArr = {"hello", "world"};
         assertEquals(
-            Serializer.serialize(strArr),
+            new Serializer().serialize(strArr),
             new ArrayNode(Arrays.asList(
                 ScalarNode.create("hello"),
                 ScalarNode.create("world")))
@@ -29,7 +29,7 @@ public class SerializerTest {
         
         int[] intArr = {1, 2, 3};
         assertEquals(
-            Serializer.serialize(intArr),
+            new Serializer().serialize(intArr),
             new ArrayNode(Arrays.asList(
                 ScalarNode.create(1),
                 ScalarNode.create(2),
@@ -38,7 +38,7 @@ public class SerializerTest {
         
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
-            Serializer.serialize(doubleArr),
+            new Serializer().serialize(doubleArr),
             new ArrayNode(Arrays.asList(
                               ScalarNode.create(1.0),
                               ScalarNode.create(2.0),
@@ -47,7 +47,7 @@ public class SerializerTest {
 
         boolean[] booleanArr = {true, false};
         assertEquals(
-            Serializer.serialize(booleanArr),
+            new Serializer().serialize(booleanArr),
             new ArrayNode(Arrays.asList(
                 ScalarNode.create(true),
                 ScalarNode.create(false)))
@@ -55,7 +55,7 @@ public class SerializerTest {
 
         Object[] nullArr = {null, null};
         assertEquals(
-            Serializer.serialize(nullArr),
+            new Serializer().serialize(nullArr),
             new ArrayNode(Arrays.asList(
                 ScalarNode.create(null),
                 ScalarNode.create(null)))
@@ -63,7 +63,7 @@ public class SerializerTest {
         
         Object[] emptyArr = {};
         assertEquals(
-            Serializer.serialize(emptyArr),
+            new Serializer().serialize(emptyArr),
             new ArrayNode(new ArrayList())
         );
     }
@@ -71,7 +71,7 @@ public class SerializerTest {
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeArrayThrows() throws Exception {
         char[] unsupportedArr = {'h', 'e', 'l', 'l', 'o'};
-        Serializer.serialize(unsupportedArr);
+        new Serializer().serialize(unsupportedArr);
     }
     
     @Test
@@ -81,7 +81,7 @@ public class SerializerTest {
         m.put("y", ScalarNode.create(2.0));
         assertEquals(
             new ObjectNode(m),
-            Serializer.serialize(new Point(1.0, 2.0))
+            new Serializer().serialize(new Point(1.0, 2.0))
         );
     }
 
@@ -92,7 +92,7 @@ public class SerializerTest {
         m.put("y", ScalarNode.create(null));
         assertEquals(
             new ObjectNode(m),
-            Serializer.serialize(new Point(1.0, null))
+            new Serializer().serialize(new Point(1.0, null))
         );
     }
     
@@ -104,7 +104,7 @@ public class SerializerTest {
         
         assertEquals(
             IntCons.astFromList(Arrays.asList(1, 2)),
-            Serializer.serialize(list)
+            new Serializer().serialize(list)
         );
     }
 
@@ -117,7 +117,7 @@ public class SerializerTest {
 
         assertEquals(
             new ObjectNode(m),
-            Serializer.serialize(val)
+            new Serializer().serialize(val)
         );
     }
     
@@ -127,25 +127,25 @@ public class SerializerTest {
         IntCons list = new IntCons(1, lastNode);
         lastNode.next = list;
         
-        Serializer.serialize(list);
+        new Serializer().serialize(list);
     }
     
     @Test
     public void testSerializeToJsonInteger() throws Exception {
         assertEquals(
             ScalarNode.create(1),
-            Serializer.serialize(1)
+            new Serializer().serialize(1)
         );
     }
 
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonChar() throws Exception {
-        Serializer.serialize('a');
+        new Serializer().serialize('a');
     }
 
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeToJsonList() throws Exception {
-        Serializer.serialize(Arrays.asList(1, 2, 3));
+        new Serializer().serialize(Arrays.asList(1, 2, 3));
     }
 
     @Test
@@ -157,7 +157,7 @@ public class SerializerTest {
                 ScalarNode.create(2),
                 ScalarNode.create(3)
             )),
-            Serializer.serialize(arr)
+            new Serializer().serialize(arr)
         );
     }
 
@@ -168,7 +168,7 @@ public class SerializerTest {
         m.put("y", ScalarNode.create(2.0));
         assertEquals(
             new ObjectNode(m),
-            Serializer.serialize(new Point(1.0, 2.0))
+            new Serializer().serialize(new Point(1.0, 2.0))
         );
     }
 

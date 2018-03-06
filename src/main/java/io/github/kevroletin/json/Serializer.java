@@ -11,19 +11,33 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Serializer {
+    private final Config config;
 
-    public static INode serialize(Object x) throws SerializationException {
+    public Serializer(Config config) {
+        this.config = config;
+    }
+
+    public Serializer() {
+        this.config = new Config();
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
+    public INode serialize(Object x) throws SerializationException {
         return serialize(x, newIdentetySet());
     }
     
-    private static INode serializeArray(Object x) throws SerializationException {
+    private INode serializeArray(Object x) throws SerializationException {
         return serializeArray(x, new HashSet<>());
     }
     
-    private static INode serializeArray(Object x, Set visited) throws SerializationException {
+    private INode serializeArray(Object x, Set visited) throws SerializationException {
         assert(TypeUtils.isArray(x));
         markAsVisited(x, visited);
         
@@ -38,11 +52,11 @@ public class Serializer {
         return new ArrayNode(res);
     }
 
-    private static INode serializeObject(Object x) throws SerializationException {
+    private INode serializeObject(Object x) throws SerializationException {
         return serializeObject(x, newIdentetySet());
     }
     
-    private static INode serializeObject(Object x, Set visited) throws SerializationException {
+    private INode serializeObject(Object x, Set visited) throws SerializationException {
         markAsVisited(x, visited);
 
         List<Field> fields = TypeUtils.getAllFields(x.getClass());
@@ -68,12 +82,12 @@ public class Serializer {
         return new ObjectNode(map);
     }
 
-    private static void throwUnsupportedClass(Class<?> cls) throws SerializationException {
+    private void throwUnsupportedClass(Class<?> cls) throws SerializationException {
         throw new SerializationException(
             String.format("Serialization of class %s is not supported", cls.getName()));
     }
 
-    private static INode serialize(Object x, Set visited) throws SerializationException {
+    private INode serialize(Object x, Set visited) throws SerializationException {
         // TODO: find serializers using annotations
         if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());
@@ -102,11 +116,11 @@ public class Serializer {
         return serializeObject(x, visited);
     }
 
-    private static boolean isSpecialFieldName(String x) {
+    private boolean isSpecialFieldName(String x) {
         return x.equals("this") || x.startsWith("this$");
     }
 
-    private static void markAsVisited(Object x, Set<Object> visited) throws SerializationException {
+    private void markAsVisited(Object x, Set<Object> visited) throws SerializationException {
         if (visited.contains(x)) {
             // TODO: improve error message
             throw new SerializationException("Circular dependency");
@@ -114,13 +128,43 @@ public class Serializer {
         visited.add(x);
     }
 
-    private static void clearVisited(Object x, Set visited) {
+    private void clearVisited(Object x, Set visited) {
         visited.remove(x);
     }
 
     // creates set which compares elevemnt by reference instead of .equals method
-    private static Set newIdentetySet() {
+    private Set newIdentetySet() {
         IdentityHashMap<Object, Boolean> c = new IdentityHashMap();
         return newSetFromMap(c);
+    }
+
+    @Override
+    public String toString() {
+        return "Serializer{" + "config=" + config + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + Objects.hashCode(this.config);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Serializer other = (Serializer) obj;
+        if (!Objects.equals(this.config, other.config)) {
+            return false;
+        }
+        return true;
     }
 }

@@ -14,24 +14,28 @@ import io.github.kevroletin.json.exceptions.SerializationException;
 public class Json {
     final Deserializer deserializer;
 
+    final Serializer serializer;
+
     final Config config;
 
     public Json() {
         this.config = new Config();
         this.deserializer = new Deserializer(this.config);
+        this.serializer = new Serializer(this.config);
     }
 
     public Json(Config config) {
         this.config = config;
         this.deserializer = new Deserializer(config);
+        this.serializer = new Serializer(config);
     }
 
     public String toJson(Object obj) throws SerializationException {
-        return Serializer.serialize(obj).toJson();
+        return serializer.serialize(obj).toJson();
     }
 
     public String toPrettyJson(Object obj) throws SerializationException {
-        return Serializer.serialize(obj).toPrettyJson();
+        return serializer.serialize(obj).toPrettyJson();
     }
 
     public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException 
@@ -59,6 +63,7 @@ public class Json {
         return new Json(config.withTypeAdapter(cls, adapter));
     }
 
+    // Unable to delete default deserializers
     public Json withoutTypeAdapter(Class<?> cls) {
         return new Json(config.withoutTypeAdapter(cls));
     }

@@ -101,7 +101,8 @@ public class DeserializerTest {
     public void testDeserializeScalarWrongType() throws DeserializationException {
         Result<Integer> res = new Deserializer().deserialize(ScalarNode.create(true), Integer.class);
         assertTrue(res.hasErrors());
-        assertTrue(res.getErrors().get(0).contains("Expected java.lang.Integer but got"));
+        assertTrue(res.getErrors().get(0).contains(
+            "Expecting node io.github.kevroletin.json.AST.IntegerNode but got io.github.kevroletin.json.AST.BooleanNode"));
     }
 
     @Test

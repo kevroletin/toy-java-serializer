@@ -2,12 +2,9 @@ package io.github.kevroletin.json;
 
 import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.ArrayNode;
-import io.github.kevroletin.json.AST.BooleanNode;
-import io.github.kevroletin.json.AST.DoubleNode;
 import io.github.kevroletin.json.AST.INode;
-import io.github.kevroletin.json.AST.IntegerNode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.StringNode;
+import io.github.kevroletin.json.adapters.DefaultAdapters;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -18,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import io.github.kevroletin.json.annotations.TypeAdapterFactory;
 import io.github.kevroletin.json.annotations.Adapter;
+import java.util.Objects;
 
 public class Deserializer {
 
@@ -43,23 +41,26 @@ public class Deserializer {
         return new Result(res, err);
     }
 
+    private TypeAdapter findAdapterInConfigs(Class cls) {
+        TypeAdapter adapter = config.typeAdapters.get(cls);
+        if (adapter != null) {
+            return adapter;
+        } else {
+            return DefaultAdapters.getMap().get(cls);
+        }
+    }
+
     public <T> Maybe<T> deserialize(List<String> err, Location loc, INode ast, Class<T> cls) {
         Adapter ann = cls.getAnnotation(Adapter.class);
         if (ann != null) {
-            return deserializeUsingAdapter(err, loc, ann.cls(), ast, cls);
+            return deserializeUsingAdapterFactory(err, loc, ann.cls(), ast, cls);
         }
-        if (config.typeAdapters.containsKey(cls)) {
-            return config.typeAdapters.get(cls).deserialize(this, err, loc, ast, cls);
-        }
-        if (TypeUtils.isUnsupportedScalarClass(cls)) {
-            pushError(err, loc, "Deserialization of class %s is not supported", cls.getName());
-            return Maybe.nothing();
+        TypeAdapter adapter = findAdapterInConfigs(cls);
+        if (adapter != null) {
+            return adapter.deserialize(this, err, loc, ast, cls);
         }
         if (ast.isNull()) {
             return Maybe.just(null);
-        }
-        if (TypeUtils.isSupportedScalarClass(cls)) {
-            return deserializeScalar(err, loc, ast, cls);
         }
         if (TypeUtils.isArrayClass(cls)) {
             return deserializeArray(err, loc, ast, cls);
@@ -71,8 +72,13 @@ public class Deserializer {
         return new Deserializer(config.withTypeAdapter(cls, adapter));
     }
 
+    // Unable to delete default deserializers
     public Deserializer withoutTypeAdapter(Class<?> cls) {
         return new Deserializer(config.withoutTypeAdapter(cls));
+    }
+
+    public Config getConfig() {
+        return config;
     }
 
     public void pushError(List<String> err, Location loc, String frmt, Object... args) {
@@ -81,6 +87,15 @@ public class Deserializer {
         } else {
             err.add(loc.toString() + " " + String.format(frmt, args));
         }
+    }
+
+    public <T> boolean expectNode(List<String> err, Location loc, INode node, Class<T> expectedNodeCls) {
+        if (!node.getClass().equals(expectedNodeCls)) {
+            pushError(err, loc, "Expecting node %s but got %s",
+                      expectedNodeCls.getName(), node.getClass().getName());
+            return false;
+        }
+        return true;
     }
 
     public <T> T createEmptyInstance(List<String> err, Location loc, Class<T> cls) {
@@ -113,37 +128,6 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
 
-    public <T> Maybe<T> deserializeScalar(List<String> err, Location loc, INode value, Class<T> cls) {
-        if (TypeUtils.isUnsupportedScalar(cls)) {
-            pushError(err, loc, "Deserialization into %s class is not supported.", cls.getName());
-            return Maybe.nothing();
-        }
-        if (value.isNull()) {
-            return Maybe.just(null);
-        } else {
-            assert(TypeUtils.isSupportedScalarClass(cls));
-            T res = null;
-            // TODO: move into type adapters
-            if (cls == Integer.class && value.isInteger()) {
-                res = (T) Integer.valueOf(((IntegerNode)value).get());
-            }
-            else if (cls == Double.class && value.isDouble()) {
-                res = (T) Double.valueOf(((DoubleNode)value).get());
-            }
-            else if (cls == Boolean.class && value.isBoolean()) {
-                res = (T) (Boolean)((BooleanNode)value).get();
-            }
-            else if (cls == String.class && value.isString()) {
-                res = (T) ((StringNode)value).get();
-            } else {
-                pushError(err, loc, "Expected %s but got %s node", cls.getName(), 
-                          value.getClass().getName());
-                return Maybe.nothing();
-            }
-            return Maybe.just(res);
-        }
-    }
-
     public <T> Maybe<T> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<T> arrCls) {
         assert(arrCls.isArray());
         Class<?> elemCls = arrCls.getComponentType();
@@ -174,7 +158,7 @@ public class Deserializer {
         return Maybe.just((T)res);
     }
 
-    private <T> Maybe<T> deserializeUsingAdapter(
+    private <T> Maybe<T> deserializeUsingAdapterFactory(
         List<String> err, Location loc, Class<? extends TypeAdapterFactory> factoryCls, INode ast, Class<T> cls) 
     {
         if (factoryCls == null) {
@@ -204,7 +188,7 @@ public class Deserializer {
         if (fieldAdapter == null) {
             return deserialize(err, loc, ast, cls);
         } else {
-            return deserializeUsingAdapter(err, loc, fieldAdapter.cls(), ast, cls);
+            return deserializeUsingAdapterFactory(err, loc, fieldAdapter.cls(), ast, cls);
         }
     }
 
@@ -246,5 +230,35 @@ public class Deserializer {
             }
         }
         return Maybe.just(resObj);
+    }
+
+    @Override
+    public String toString() {
+        return "Deserializer{" + "config=" + config + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.config);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Deserializer other = (Deserializer) obj;
+        if (!Objects.equals(this.config, other.config)) {
+            return false;
+        }
+        return true;
     }
 }
