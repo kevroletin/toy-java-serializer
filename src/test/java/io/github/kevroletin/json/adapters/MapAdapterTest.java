@@ -27,6 +27,14 @@ public class MapAdapterTest {
                 new TypeToken<Map<String, Integer>>() {}.getType())
         );
 
+        assertArrayEquals(
+            new Map[] { m1 },
+            (Map[]) json.fromJson(
+                "[{\"f1\": 1, \"f2\": 2, \"f3\": 3}]",
+                new TypeToken<Map<String, Integer>[]>() {}.getType()
+            )
+        );
+
         assertTrue(
             json.fromJsonNoThrow(
                 "{\"f1\": 1, \"f2\": 2, \"f3\": 3}",

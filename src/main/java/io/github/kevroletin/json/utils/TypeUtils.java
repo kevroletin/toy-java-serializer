@@ -2,6 +2,7 @@ package io.github.kevroletin.json.utils;
 
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.exceptions.DeserializationException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -118,6 +119,9 @@ public class TypeUtils {
     }
 
     public static Class getClassFromTypeNoThrow(List<String> err, Location loc, Type type) {
+        if (type instanceof Class) {
+            return (Class) type;
+        }
         if (type instanceof ParameterizedType) {
             ParameterizedType parType = (ParameterizedType)type;
             try {
@@ -129,16 +133,41 @@ public class TypeUtils {
             }
         }
         if (type instanceof GenericArrayType) {
-            assert(false);
+            return Array.class;
         }
         if (type instanceof TypeVariable) {
-            assert(false);
-        }
-        if (type instanceof WildcardType) {
-            err.add("Can't turn ? into class");
+            err.add("Can't turn type variable into a class");
             return null;
         }
-        return (Class) type;
+        if (type instanceof WildcardType) {
+            err.add("Can't turn ? generic parameter into a class");
+            return null;
+        }
+        assert(false);
+        return null;
+    }
+
+    public static boolean isArrayType(Type type) {
+        if (type instanceof GenericArrayType) {
+            return true;
+        }
+        if (type instanceof Class && ((Class)type).isArray()) {
+            return true;
+        }
+        return false;
+    }
+
+    public static Type getArrayElementType(List<String> err, Location loc, Type type) {
+        if (type instanceof GenericArrayType) {
+            GenericArrayType gen = (GenericArrayType) type;
+            return gen.getGenericComponentType();
+        }
+        if (!(type instanceof Class) || !((Class)type).isArray()) {
+            err.add(loc.toStringWith("Expecting array class"));
+            return null;
+        }
+        Class cls = (Class) type;
+        return cls.getComponentType();
     }
 
     public static Type getGenericParameterTypeNoThrow(List<String> err, Location loc, int idx, Type type) {

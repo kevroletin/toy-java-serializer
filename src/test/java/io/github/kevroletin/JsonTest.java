@@ -46,13 +46,13 @@ public class JsonTest {
     @Test
     public void testJsonArray() {
         Result<Boolean[]> res = new Json().fromJsonNoThrow("[1, true, 3]", Boolean[].class);
-// TODO:
-//        assertEquals(
-//            Arrays.asList(
-//                "[0] Expected java.lang.Boolean but got java.lang.Integer",
-//                "[2] Expected java.lang.Boolean but got java.lang.Integer"),
-//            res.getErrors().size()
-//        );
+        assertEquals(
+            Arrays.asList(
+                "[0] Expecting node io.github.kevroletin.json.AST.BooleanNode but got io.github.kevroletin.json.AST.IntegerNode",
+                "[2] Expecting node io.github.kevroletin.json.AST.BooleanNode but got io.github.kevroletin.json.AST.IntegerNode"
+            ),
+            res.getErrors()
+        );
         assertTrue(res.hasValue());
         assertArrayEquals(new Boolean[] {null, true, null}, res.get());
     }
@@ -360,15 +360,17 @@ public class JsonTest {
     @Test
     public void testMultipleTypeErrors() throws Exception {
         String str = "{\"x\":true,\"y\":false}";
-// TODO:
-//        assertEquals(
-//            new Json().fromJsonNoThrow(str, Point.class),
-//            new Result(
-//                Maybe.just(new Point(null, null)),
-//                Arrays.asList(
-//                    "{x} Expected java.lang.Double but got java.lang.Boolean",
-//                    "{y} Expected java.lang.Double but got java.lang.Boolean"))
-//        );
+        assertEquals(
+            new Result(
+                Maybe.just(new Point(null, null)),
+                Arrays.asList(
+                    "{x} Expecting node io.github.kevroletin.json.AST.DoubleNode "
+                        + "but got io.github.kevroletin.json.AST.BooleanNode",
+                    "{y} Expecting node io.github.kevroletin.json.AST.DoubleNode "
+                        + "but got io.github.kevroletin.json.AST.BooleanNode"
+                )),
+            new Json().fromJsonNoThrow(str, Point.class)
+        );
     }
 
     @Ignore

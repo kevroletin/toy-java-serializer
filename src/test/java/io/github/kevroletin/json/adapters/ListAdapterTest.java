@@ -66,6 +66,40 @@ public class ListAdapterTest {
         );
     }
 
+    @Test
+    public void testArrayVsList() throws JsonParsingException, DeserializationException {
+        Json json = new Json();
+
+        assertEquals(
+            Arrays.asList(Arrays.asList(1)),
+            json.fromJson("[[1]]", new TypeToken<List<List<Integer>>>() {}.getType())
+        );
+
+        List<Integer[]> res = (List<Integer[]>)
+            json.fromJson("[[2]]", new TypeToken<List<Integer[]>>() {}.getType());
+
+        assertEquals(res.size(), 1);
+        assertEquals(res.get(0).length, 1);
+        assertEquals(res.get(0)[0], (Integer)2);
+
+        List<Integer>[] res2 = (List<Integer>[])
+            json.fromJson("[[2]]", new TypeToken<List<Integer>[]>() {}.getType());
+        assertEquals(res2.length, 1);
+        assertEquals(res2[0].size(), 1);
+        assertEquals(res2[0].get(0), (Integer)2);
+
+        List<int[]>[] res3 = (List<int[]>[])
+            json.fromJson("[[[2]]]", new TypeToken<List<int[]>[]>() {}.getType());
+        assertEquals(res3.length, 1);
+        assertEquals(res3[0].size(), 1);
+        assertEquals(res3[0].get(0).length, 1);
+        assertEquals(res3[0].get(0)[0], 2);
+    }
+
+    @Test
+    public void testObjectVsList() throws JsonParsingException, DeserializationException {
+    }
+
     static class ListWrapper {
         List<List<Point>> values;
 
@@ -108,7 +142,7 @@ public class ListAdapterTest {
     }
 
     @Test
-    public void testListAsField() throws JsonParsingException, DeserializationException {
+    public void testListAsAField() throws JsonParsingException, DeserializationException {
         Json json = new Json();
 
         assertEquals(

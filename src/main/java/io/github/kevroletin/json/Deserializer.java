@@ -69,7 +69,7 @@ public class Deserializer {
         if (ast.isNull()) {
             return Maybe.just(null);
         }
-        if (TypeUtils.isArrayClass(cls)) {
+        if (TypeUtils.isArrayType(type)) {
             return deserializeArray(err, loc, ast, type);
         }
         return deserializeObject(err, loc, ast, type);
@@ -134,7 +134,14 @@ public class Deserializer {
         if (arrCls == null) {
             return Maybe.nothing();
         }
-        Class<?> elemCls = arrCls.getComponentType();
+        Type elemType = TypeUtils.getArrayElementType(err, arrLoc, type);
+        if (elemType == null) {
+            return Maybe.nothing();
+        }
+        Class elemCls = TypeUtils.getClassFromTypeNoThrow(err, arrLoc, elemType);
+        if (elemCls == null) {
+            return Maybe.nothing();
+        }
 
         List<INode> astValues = ensureNodeIsArray(err, arrLoc, ast);
         if (astValues == null) {
@@ -145,7 +152,7 @@ public class Deserializer {
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
             Location valLoc = arrLoc.addIndex(i);
-            Maybe<?> val = deserializeIt(err, valLoc, valAst, elemCls);
+            Maybe<?> val = deserializeIt(err, valLoc, valAst, elemType);
             if (!val.isJust()) {
                 continue;
             }

@@ -30,6 +30,9 @@ class User1 {
 public class Main {
 
     static public void main(String[] args) throws JsonException {
+        int[] arr = new int[] {};
+        System.out.println( arr.getClass() );
+
         Json json = new JsonBuilder()
                     .typeAdapter(TelephoneNumber.class, new TelephoneNumber.TelephoneNumberAdapter())
                     .build();
