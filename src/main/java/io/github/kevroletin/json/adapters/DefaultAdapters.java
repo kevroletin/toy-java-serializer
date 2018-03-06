@@ -2,6 +2,7 @@ package io.github.kevroletin.json.adapters;
 
 import io.github.kevroletin.json.TypeAdapter;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultAdapters {
@@ -16,7 +17,8 @@ public class DefaultAdapters {
         map.put(double.class,  new DoubleAdapter(false));
         map.put(Boolean.class, new BooleanAdapter(true));
         map.put(boolean.class, new BooleanAdapter(false));
-        
+        map.put(List.class,    new ListAdapter());
+        map.put(Map.class,     new MapAdapter());
     }
     
     public static Map<Class, TypeAdapter> getMap() {

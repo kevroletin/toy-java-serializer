@@ -10,6 +10,7 @@ import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.SerializationException;
+import java.lang.reflect.Type;
 
 public class Json {
     final Deserializer deserializer;
@@ -40,23 +41,32 @@ public class Json {
 
     public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException 
     {
+        return (T) fromJson(str, (Type) cls);
+    }
+
+    public Object fromJson(String str, Type cls) throws JsonParsingException, DeserializationException 
+    {
         INode ast = JsonParser.parse(str);
-        Result<T> res = deserializer.deserialize(ast, cls);
+        Result res = deserializer.deserialize(ast, cls);
         if (res.hasErrors()) {
             throw new DeserializationException(String.join("; ", res.getErrors()));
         }
         return res.orElse(null);
     }
 
-    public <T> Result<T> fromJsonNoThrow(String str, Class<T> cls) {
+    public Result<?> fromJsonNoThrow(String str, Type type) {
         INode ast;
         try {
             ast = JsonParser.parse(str);
         } catch (JsonParsingException ex) {
             return Result.error("Json parsing error: " + ex.getMessage());
         }
-        Result<T> res = deserializer.deserialize(ast, cls);
+        Result res = deserializer.deserialize(ast, type);
         return res;
+    }
+
+    public <T> Result<T> fromJsonNoThrow(String str, Class<T> cls) {
+        return (Result<T>) fromJsonNoThrow(str, (Type)cls);
     }
 
     public Json withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {

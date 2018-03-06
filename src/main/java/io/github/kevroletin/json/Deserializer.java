@@ -52,6 +52,10 @@ public class Deserializer {
         return (Maybe<T>) deserializeIt(err, loc, ast, cls);
     }
 
+    public Maybe deserialize(List<String> err, Location loc, INode ast, Type type) {
+        return deserializeIt(err, loc, ast, type);
+    }
+
     public <T> Maybe<T> deserializeWithoutTypeAdapters(List<String> err, Location loc, INode ast, Class<T> cls) {
         return (Maybe<T>) deserializeWithoutTypeAdaptersIt(err, loc, ast, cls); 
     }

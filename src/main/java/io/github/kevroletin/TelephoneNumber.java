@@ -3,14 +3,12 @@ package io.github.kevroletin;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
-import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.annotations.TypeAdapterFactory;
 import io.github.kevroletin.json.utils.Maybe;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class TelephoneNumber {
 

@@ -14,8 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TypeUtils {
     static public boolean isScalar(Object x) {
@@ -100,7 +98,7 @@ public class TypeUtils {
         return allFields;
     }
     
-    /** This approach works better that class.newInstance because here we can
+    /** This approach works better than class.newInstance because here we can
      * call ctor.setAccessible(true) which prevents some access forbidden errors.
      */
     public static Constructor<?> getDefaultConstructor(Class<?> cls) throws DeserializationException {
@@ -141,5 +139,19 @@ public class TypeUtils {
             return null;
         }
         return (Class) type;
+    }
+
+    public static Type getGenericParameterTypeNoThrow(List<String> err, Location loc, int idx, Type type) {
+        if (!(type instanceof ParameterizedType)) {
+            err.add(loc.toStringWith("No generic parameters is attached to a type %s", type.toString()));
+            return null;
+        }
+        ParameterizedType par = (ParameterizedType) type;
+        Type[] args = par.getActualTypeArguments();
+        if (args.length <= idx) {
+            err.add(loc.toStringWith("Type has less than %d type parameters", idx));
+            return null;
+        }
+        return args[idx];
     }
 }
