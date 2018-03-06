@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-    
+
 public class IntCons {
     public static INode astFromList(List<Integer> fromList) {
         List<Integer> list = new ArrayList(fromList);

@@ -33,5 +33,5 @@ public class DoubleAdapter extends BaseTypeAdapter<Double> {
     protected Class getNodeType() {
         return DoubleNode.class;
     }
-    
+
 }

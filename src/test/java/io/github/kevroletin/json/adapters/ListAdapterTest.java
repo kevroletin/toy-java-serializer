@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ListAdapterTest {
-    
+
     @Test
     public void testSimpleCases() throws JsonParsingException, DeserializationException {
         Json json = new Json();
@@ -50,7 +50,7 @@ public class ListAdapterTest {
             json.fromJsonNoThrow("[1, true, 3]", new TypeToken<List<Integer>>() {}.getType()).hasErrors()
         );
     }
-    
+
     @Test
     public void testListOfObjects() throws JsonParsingException, DeserializationException {
         Json json = new Json();

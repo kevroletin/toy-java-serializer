@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 
 public class DeserializerTest {
-    
+
     public DeserializerTest() {
     }
 
@@ -78,7 +78,7 @@ public class DeserializerTest {
     @Ignore
     public void testDeserializeObjectWithOtherObjects() {
     }
-    
+
     @Test
     public void testDeserializeScalar() throws DeserializationException {
         assertEquals(
@@ -114,7 +114,7 @@ public class DeserializerTest {
         ));
         Integer[] arr = {1, 2, 3};
         assertArrayEquals(
-            arr, 
+            arr,
             new Deserializer().deserialize(ir, Integer[].class).get()
         );
     }
@@ -157,7 +157,7 @@ public class DeserializerTest {
                                   {new IntegerWrapper(3),
                                    new IntegerWrapper(4)}};
         assertArrayEquals(
-            arr, 
+            arr,
             new Deserializer().deserialize(ir, IntegerWrapper[][].class).get()
         );
     }
@@ -201,7 +201,7 @@ public class DeserializerTest {
             return "InnerClass{" + "value=" + value + '}';
         }
     }
-    
+
     static class OuterClass {
         InnerClass value;
 

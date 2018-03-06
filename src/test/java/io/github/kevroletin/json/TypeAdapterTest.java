@@ -19,7 +19,7 @@ public class TypeAdapterTest {
         public final String value;
 
         public static Maybe<String> sanitize (String value) {
-            String digits = 
+            String digits =
                 value.codePoints()
                      .filter(Character::isDigit)
                      .collect(StringBuilder::new,
@@ -34,7 +34,7 @@ public class TypeAdapterTest {
         }
 
         public TelephoneNumber(String value) {
-            this.value = sanitize(value).orElseThrow(() -> 
+            this.value = sanitize(value).orElseThrow(() ->
                 new RuntimeException("Invalid telephone number format")
             );
         }
@@ -80,7 +80,7 @@ public class TypeAdapterTest {
                 err.addAll(res.getErrors());
                 return Maybe.nothing();
             }
-            
+
             try {
                 return Maybe.just(new TelephoneNumber(res.get()));
             } catch (Exception ex) {
@@ -190,7 +190,7 @@ public class TypeAdapterTest {
 
         @Override
         public Maybe<String> deserialize(
-            Deserializer d, List<String> err, Location loc, INode ast, Type type) 
+            Deserializer d, List<String> err, Location loc, INode ast, Type type)
         {
             Maybe<String> str = new Deserializer().deserialize(err, loc, ast, String.class);
             if (str.isNothing()) {
@@ -211,7 +211,7 @@ public class TypeAdapterTest {
     public void TestSanitizationOfString() throws JsonParsingException, DeserializationException {
         Json json = new JsonBuilder()
                         .typeAdapter(String.class, new StringToTelephoneSanitizer()).build();
-        
+
         assertEquals(
             new UserWithStringNumber("71234567890"),
             json.fromJson("{\"number\": \"+71234567890\"}", UserWithStringNumber.class)
@@ -226,7 +226,7 @@ public class TypeAdapterTest {
     public void TestDeserializationOfCustomType() throws JsonParsingException, DeserializationException {
         Json json = new JsonBuilder()
                         .typeAdapter(TelephoneNumber.class, new TelephoneNumberAdapter()).build();
-        
+
         assertEquals(
             new UserWithNumber(new TelephoneNumber("71234567890")),
             json.fromJson("{\"number\": \"+71234567890\"}", UserWithNumber.class)

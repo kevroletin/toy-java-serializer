@@ -32,15 +32,15 @@ public class Serializer {
     public INode serialize(Object x) throws SerializationException {
         return serialize(x, newIdentetySet());
     }
-    
+
     private INode serializeArray(Object x) throws SerializationException {
         return serializeArray(x, new HashSet<>());
     }
-    
+
     private INode serializeArray(Object x, Set visited) throws SerializationException {
         assert(TypeUtils.isArray(x));
         markAsVisited(x, visited);
-        
+
         ArrayList<INode> res = new ArrayList<>();
 
         for (int i = 0; i < Array.getLength(x); i++) {
@@ -55,7 +55,7 @@ public class Serializer {
     private INode serializeObject(Object x) throws SerializationException {
         return serializeObject(x, newIdentetySet());
     }
-    
+
     private INode serializeObject(Object x, Set visited) throws SerializationException {
         markAsVisited(x, visited);
 
@@ -107,7 +107,7 @@ public class Serializer {
                 return new BooleanNode((Boolean)x);
             }
             else if (TypeUtils.isString(x)) {
-                return new StringNode((String)x); 
+                return new StringNode((String)x);
             }
         }
         if (TypeUtils.isArray(x)) {

@@ -82,7 +82,7 @@ class Point {
 }
 
 public class AdapterAnnotationsTest {
-    
+
     @Test
     public void testPositeveNumber() throws JsonParsingException {
         Result<Point> p = new Json().fromJsonNoThrow("{\"x\":-1,\"y\":1}", Point.class);
@@ -92,12 +92,12 @@ public class AdapterAnnotationsTest {
         assertTrue(p.hasValue());
         assertEquals(new Point(-1, 1), p.get());
     }
-    
+
     @Test
     public void testRejectNegativeNumber() throws JsonParsingException {
         Result<Point> p = new Json().fromJsonNoThrow("{\"x\":1,\"y\":-1}", Point.class);
         assertTrue(p.hasErrors());
         assertTrue(p.getErrors().get(0).contains("Integer should be positive"));
     }
-    
+
 }

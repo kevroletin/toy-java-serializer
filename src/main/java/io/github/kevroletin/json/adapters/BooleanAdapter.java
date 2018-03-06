@@ -23,5 +23,5 @@ public class BooleanAdapter extends BaseTypeAdapter<Boolean> {
     protected Class getNodeType() {
         return BooleanNode.class;
     }
-    
+
 }

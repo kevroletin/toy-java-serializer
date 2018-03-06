@@ -35,7 +35,7 @@ public class Result<T> {
     public boolean hasValue() {
         return hasValue;
     }
-    
+
     public boolean hasErrors() {
         return errors.size() > 0;
     }

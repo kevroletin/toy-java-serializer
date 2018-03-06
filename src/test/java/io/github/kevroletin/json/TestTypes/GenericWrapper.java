@@ -8,7 +8,7 @@ public class GenericWrapper<T> {
     public GenericWrapper(T value) {
         this.value = value;
     }
-    
+
     public GenericWrapper() {}
 
     @Override

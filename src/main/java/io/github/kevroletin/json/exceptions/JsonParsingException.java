@@ -20,5 +20,5 @@ public class JsonParsingException extends JsonException {
     public JsonParsingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
-    
+
 }

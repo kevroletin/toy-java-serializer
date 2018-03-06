@@ -40,5 +40,5 @@ public class ListAdapter implements TypeAdapter<List> {
         }
         return Maybe.just(res);
     }
-    
+
 }

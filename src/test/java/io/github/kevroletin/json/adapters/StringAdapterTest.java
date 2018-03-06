@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class StringAdapterTest {
-    
+
     public StringAdapterTest() {
     }
 
@@ -41,5 +41,5 @@ public class StringAdapterTest {
     @Test
     public void testSerialize() {
     }
-    
+
 }

@@ -23,7 +23,7 @@ public interface INode {
         StringBuffer buff = new StringBuffer();
         toJson(buff);
         return buff.toString();
-    } 
+    }
 
     void toJson(StringBuffer res);
 

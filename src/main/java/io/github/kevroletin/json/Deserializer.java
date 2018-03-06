@@ -154,8 +154,8 @@ public class Deserializer {
             } catch (IllegalArgumentException e) {
                 pushError(err, valLoc,
                           "Failed to set value: expected type %s but got %s",
-                          i, 
-                          elemCls.getName(), 
+                          i,
+                          elemCls.getName(),
                           val.get().getClass().getName());
             }
         }
@@ -163,7 +163,7 @@ public class Deserializer {
     }
 
     private <T> Maybe<T> sanitize(
-        List<String> err, Location loc, Class<? extends SanitizerFactory> factoryCls, T value) 
+        List<String> err, Location loc, Class<? extends SanitizerFactory> factoryCls, T value)
     {
         if (factoryCls == null) {
             pushError(err, loc, "@Adapter.cls is null");

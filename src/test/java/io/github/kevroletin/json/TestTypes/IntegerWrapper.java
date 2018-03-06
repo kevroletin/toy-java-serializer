@@ -19,7 +19,7 @@ public class IntegerWrapper {
     public IntegerWrapper(Integer value) {
         this.value = value;
     }
-    
+
     public IntegerWrapper() {}
 
     @Override

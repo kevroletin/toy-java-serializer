@@ -8,7 +8,7 @@ public class BooleanWrapper {
     public BooleanWrapper(Boolean values) {
         this.value = values;
     }
-    
+
     public BooleanWrapper() {}
 
     @Override

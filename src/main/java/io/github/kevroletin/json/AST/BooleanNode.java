@@ -1,7 +1,7 @@
 package io.github.kevroletin.json.AST;
 
 public class BooleanNode implements INode {
-    final private boolean value;   
+    final private boolean value;
 
     public BooleanNode(boolean value) {
         this.value = value;

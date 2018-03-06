@@ -22,7 +22,7 @@ public class TelephoneNumber {
             if (!res.isJust() || res.get() == null) {
                 return Maybe.nothing();
             }
-            
+
             try {
                 return Maybe.just(new TelephoneNumber(res.get()));
             } catch (Exception ex) {
@@ -57,7 +57,7 @@ public class TelephoneNumber {
     }
 
     public static Maybe<String> sanitize(List<String> err, Location loc, String value) {
-        String digits = 
+        String digits =
             value.codePoints()
                     .filter(Character::isDigit)
                     .collect(StringBuilder::new,
@@ -76,7 +76,7 @@ public class TelephoneNumber {
 
     public TelephoneNumber(String value) {
         List<String> err = new ArrayList();
-        this.value = sanitize(err, Location.empty(), value).orElseThrow(() -> 
+        this.value = sanitize(err, Location.empty(), value).orElseThrow(() ->
             new RuntimeException(String.join("; ", err))
         );
     }

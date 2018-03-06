@@ -39,12 +39,12 @@ public class Json {
         return serializer.serialize(obj).toPrettyJson();
     }
 
-    public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException 
+    public <T> T fromJson(String str, Class<T> cls) throws JsonParsingException, DeserializationException
     {
         return (T) fromJson(str, (Type) cls);
     }
 
-    public Object fromJson(String str, Type cls) throws JsonParsingException, DeserializationException 
+    public Object fromJson(String str, Type cls) throws JsonParsingException, DeserializationException
     {
         INode ast = JsonParser.parse(str);
         Result res = deserializer.deserialize(ast, cls);

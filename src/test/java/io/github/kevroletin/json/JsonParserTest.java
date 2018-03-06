@@ -14,7 +14,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class JsonParserTest {
-    
+
     public JsonParserTest() {
     }
 
@@ -45,7 +45,7 @@ public class JsonParserTest {
             JsonParser.parse("-10")
         );
     }
-    
+
     @Test(expected = JsonParsingException.class)
     public void testParseIntThrows() throws Exception {
         JsonParser.parse("01");
@@ -125,7 +125,7 @@ public class JsonParserTest {
             ScalarNode.create(""),
             JsonParser.parse("\"\"")
         );
-        
+
         assertEquals(
             ScalarNode.create("\b \f \n \r \t \""),
             JsonParser.parse("\"\\b \\f \\n \\r \\t \\\"\"")

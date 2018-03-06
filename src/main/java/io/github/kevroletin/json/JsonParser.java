@@ -46,7 +46,7 @@ public class JsonParser {
         public boolean isEmpty() {
             return pos >= data.length();
         }
-        
+
         public char pop() throws JsonParsingException {
             char res = get();
             ++pos;
@@ -126,7 +126,7 @@ public class JsonParser {
 
     private String eatString() throws JsonParsingException {
         expect('"');
-        
+
         StringBuilder res = new StringBuilder();
         boolean prevSlash = false;
 
@@ -150,16 +150,16 @@ public class JsonParser {
             }
         }
 
-        return res.toString(); 
+        return res.toString();
     }
-    
-    /** 
+
+    /**
      * - no support for escaped unicode characters
      * - error message could be improved
      */
     private StringNode parseString() throws JsonParsingException {
         return new StringNode(eatString());
-    }    
+    }
 
     private String eatInt() throws JsonParsingException {
         boolean negative = false;
@@ -194,14 +194,14 @@ public class JsonParser {
         return Optional.empty();
     }
 
-    private String eatDigits() throws JsonParsingException { 
+    private String eatDigits() throws JsonParsingException {
         StringBuilder res = new StringBuilder();
         while (!in.isEmpty() && Character.isDigit(in.get())) {
             res.append(in.pop());
         }
         return res.toString();
     }
-    
+
     private INode parseNumber() throws JsonParsingException {
         String intPart = eatInt();
         Optional<String> fracPart = tryParse(this::eatFrac);
@@ -251,10 +251,10 @@ public class JsonParser {
     private INode parseScalar() throws JsonParsingException {
         Optional<INode> res = tryParse(this::parseString);
         if (!res.isPresent()) {
-            res = tryParse(this::parseNumber); 
+            res = tryParse(this::parseNumber);
         }
         if (!res.isPresent()) {
-            res = tryParse(this::parseBoolean); 
+            res = tryParse(this::parseBoolean);
         }
         if (!res.isPresent()) {
             res = tryParse(() -> { expect("null"); return NullNode.getInstance(); });
@@ -288,7 +288,7 @@ public class JsonParser {
         expect('{');
         skipSpaces();
         Map<String, INode> fields = new HashMap();
-        
+
         boolean ok = (in.get() != '}');
         while (ok) {
             String key = eatString();
@@ -312,12 +312,12 @@ public class JsonParser {
 
     private INode parseInternal() throws JsonParsingException {
         skipSpaces();
-        Optional<INode> res = tryParse(this::parseObject); 
+        Optional<INode> res = tryParse(this::parseObject);
         if (!res.isPresent()) {
-            res = tryParse(this::parseArray); 
+            res = tryParse(this::parseArray);
         }
         if (!res.isPresent()) {
-            res = tryParse(this::parseScalar); 
+            res = tryParse(this::parseScalar);
         }
         return res.orElseThrow(() -> new JsonParsingException("Failed to parse json"));
     }

@@ -20,5 +20,5 @@ public class SerializationException extends JsonException {
     public SerializationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
-    
+
 }

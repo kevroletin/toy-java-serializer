@@ -30,5 +30,5 @@ public class IntegerAdapter extends BaseTypeAdapter<Integer> {
     protected Class getNodeType() {
         return IntegerNode.class;
     }
-    
+
 }

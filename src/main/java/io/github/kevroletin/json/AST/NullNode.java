@@ -29,5 +29,5 @@ public class NullNode implements INode {
     public String toString() {
         return "NullNode{" + '}';
     }
-    
+
 }

@@ -19,7 +19,7 @@ public class StringWrapper {
     public StringWrapper(String value) {
         this.value = value;
     }
-    
+
     public StringWrapper() {}
 
     @Override

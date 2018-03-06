@@ -58,5 +58,5 @@ public class DoubleNode implements INode {
         }
         return true;
     }
-    
+
 }

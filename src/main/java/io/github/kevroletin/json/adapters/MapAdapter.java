@@ -63,5 +63,5 @@ public class MapAdapter implements TypeAdapter<Map> {
 
         return Maybe.just(res);
     }
-    
+
 }

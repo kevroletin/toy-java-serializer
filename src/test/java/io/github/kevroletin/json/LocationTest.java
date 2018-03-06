@@ -4,7 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class LocationTest {
-    
+
     @Test
     public void testEmpty() {
         assertEquals(
@@ -24,7 +24,7 @@ public class LocationTest {
     @Test
     public void testImmutability() {
         Location base = Location.empty().addString("->");
-        
+
         assertEquals(
             "->{hello}",
             base.addField("hello").toString()

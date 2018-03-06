@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 public class SerializerTest {
-    
+
     @org.junit.Test
     public void testSerializeArray() throws Exception {
         String[] strArr = {"hello", "world"};
@@ -26,7 +26,7 @@ public class SerializerTest {
                 ScalarNode.create("hello"),
                 ScalarNode.create("world")))
         );
-        
+
         int[] intArr = {1, 2, 3};
         assertEquals(
             new Serializer().serialize(intArr),
@@ -35,7 +35,7 @@ public class SerializerTest {
                 ScalarNode.create(2),
                 ScalarNode.create(3)))
         );
-        
+
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
             new Serializer().serialize(doubleArr),
@@ -60,7 +60,7 @@ public class SerializerTest {
                 ScalarNode.create(null),
                 ScalarNode.create(null)))
         );
-        
+
         Object[] emptyArr = {};
         assertEquals(
             new Serializer().serialize(emptyArr),
@@ -73,7 +73,7 @@ public class SerializerTest {
         char[] unsupportedArr = {'h', 'e', 'l', 'l', 'o'};
         new Serializer().serialize(unsupportedArr);
     }
-    
+
     @Test
     public void testSerializeObjectPoint() throws Exception {
         Map<String, INode> m = new HashMap<>();
@@ -95,13 +95,13 @@ public class SerializerTest {
             new Serializer().serialize(new Point(1.0, null))
         );
     }
-    
+
     @Test
     public void testSerializeObjectList() throws Exception {
-        IntCons list = 
-            new IntCons(1, 
+        IntCons list =
+            new IntCons(1,
                 new IntCons(2, null));
-        
+
         assertEquals(
             IntCons.astFromList(Arrays.asList(1, 2)),
             new Serializer().serialize(list)
@@ -111,7 +111,7 @@ public class SerializerTest {
     @Test
     public void testSerializeObjectPrivateField() throws Exception {
         GenericWrapper<String> val = new GenericWrapper("Secret");
-        
+
         Map<String, INode> m = new HashMap<>();
         m.put("value", ScalarNode.create("Secret"));
 
@@ -120,16 +120,16 @@ public class SerializerTest {
             new Serializer().serialize(val)
         );
     }
-    
+
     @org.junit.Test(expected = SerializationException.class)
     public void testSerializeObjectCircularDependency() throws Exception {
         IntCons lastNode = new IntCons(2, null);
         IntCons list = new IntCons(1, lastNode);
         lastNode.next = list;
-        
+
         new Serializer().serialize(list);
     }
-    
+
     @Test
     public void testSerializeToJsonInteger() throws Exception {
         assertEquals(

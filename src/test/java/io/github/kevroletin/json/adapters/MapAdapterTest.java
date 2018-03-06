@@ -11,7 +11,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class MapAdapterTest {
-    
+
     @Test
     public void testDeserialize() throws JsonParsingException, DeserializationException {
         Json json = new Json().withTypeAdapter(Map.class, new MapAdapter());
@@ -50,7 +50,7 @@ public class MapAdapterTest {
                 "{\"71234567890\": true, \"00000000000\": false}",
                 new TypeToken<Map<TelephoneNumber, Boolean>>() {}.getType())
         );
-    
+
         assertTrue(
             json.fromJsonNoThrow(
                 "{\"bad\": true, \"00000000000\": false}",

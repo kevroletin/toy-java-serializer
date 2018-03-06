@@ -23,7 +23,7 @@ public class TypeUtils {
     static public boolean isScalarClass(Class<?> cls) {
         return isSupportedScalarClass(cls) || isUnsupportedScalarClass(cls);
     }
-    
+
     static public boolean isSupportedScalar(Object x) {
         return isSupportedScalarClass(x.getClass());
     }
@@ -34,11 +34,11 @@ public class TypeUtils {
             || cls == String.class
             || cls == Boolean.class;
     }
-    
+
     static public boolean isUnsupportedScalar(Object x) {
         return x != null && isUnsupportedScalarClass(x.getClass());
     }
-    
+
     static public boolean isUnsupportedScalarClass(Class<?> cls) {
         // We don't support fields which are not nullable for simplicity
         if (cls.isPrimitive()) {
@@ -74,7 +74,7 @@ public class TypeUtils {
     static public boolean isArrayClass(Class<?> cls) {
         return cls.isArray();
     }
-    
+
     /** Due to inheritance we need to recursively scan super classes to find all
      * fields
      */
@@ -97,7 +97,7 @@ public class TypeUtils {
 
         return allFields;
     }
-    
+
     /** This approach works better than class.newInstance because here we can
      * call ctor.setAccessible(true) which prevents some access forbidden errors.
      */
@@ -123,7 +123,7 @@ public class TypeUtils {
             try {
                 return Class.forName(parType.getRawType().getTypeName());
             } catch (ClassNotFoundException ex) {
-                err.add(loc.toStringWith("Failed to convert %s type into class: %s", 
+                err.add(loc.toStringWith("Failed to convert %s type into class: %s",
                                          type.toString(), ex.getMessage()));
                 return null;
             }

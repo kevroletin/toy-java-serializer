@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 import org.junit.Ignore;
 
 public class JsonTest {
-    
+
     public JsonTest() {
     }
 
@@ -92,12 +92,12 @@ public class JsonTest {
                     assertEquals(1, res.getErrors().size());
                 } else {
                     if (from.cls.isArray()) {
-                        assertArrayEquals(msg, 
-                            (Object[])from.res, 
+                        assertArrayEquals(msg,
+                            (Object[])from.res,
                             (Object[])new Json().fromJson(from.json, from.cls) );
                     } else {
-                        assertEquals(msg, 
-                            from.res, 
+                        assertEquals(msg,
+                            from.res,
                             new Json().fromJson(from.json, from.cls) );
                     }
                 }
@@ -114,7 +114,7 @@ public class JsonTest {
         );
     }
 
-    String threeNestedObjectsJson = 
+    String threeNestedObjectsJson =
           "{\n"
         + "  \"booleanArray\": [\n"
         + "    true,\n"
@@ -234,7 +234,7 @@ public class JsonTest {
         obj3.objectArray = new AllSupportedTypesWrapper[] {obj2};
 
         assertEquals(
-            threeNestedObjectsJson, 
+            threeNestedObjectsJson,
             new Json().toPrettyJson(obj3)
         );
 
@@ -262,7 +262,7 @@ public class JsonTest {
         String str = "{\"booleanArray\":null,\"booleanValue\":null,\"doubleArray\":null,\"doubleValue\":null,\"intArray\":null,\"intValue\":null,\"object\":null,\"objectArray\":null,\"stringArray\":null,\"stringValue\":null}";
 
         assertEquals(
-            str, 
+            str,
             new Json().toJson(obj1)
         );
 
@@ -286,11 +286,11 @@ public class JsonTest {
         obj1.stringArray = new String[] {null, null};
         obj1.booleanArray = new Boolean[] {null, null};
         obj1.objectArray = new AllSupportedTypesWrapper[] {null};
-        
+
         String str = "{\"booleanArray\":[null,null],\"booleanValue\":null,\"doubleArray\":[null,null,null],\"doubleValue\":null,\"intArray\":[null,null,null],\"intValue\":null,\"object\":null,\"objectArray\":[null],\"stringArray\":[null,null],\"stringValue\":null}";
 
         assertEquals(
-            str, 
+            str,
             new Json().toJson(obj1)
         );
 
@@ -318,7 +318,7 @@ public class JsonTest {
         String str = "{\"booleanArray\":[],\"booleanValue\":null,\"doubleArray\":[],\"doubleValue\":null,\"intArray\":[],\"intValue\":null,\"object\":null,\"objectArray\":[],\"stringArray\":[],\"stringValue\":null}";
 
         assertEquals(
-            str, 
+            str,
             new Json().toJson(obj1)
         );
 
@@ -347,7 +347,7 @@ public class JsonTest {
         String str = "{\"booleanArray\":[true,false],\"booleanValue\":true,\"doubleArray\":[1.0,2.0,3.0],\"doubleValue\":1.0,\"intArray\":[1,2,3],\"intValue\":1,\"object\":null,\"objectArray\":[],\"stringArray\":[\"hello\",\"world\"],\"stringValue\":\"one\"}";
 
         assertEquals(
-            str, 
+            str,
             new Json().toJson(obj1)
         );
 
@@ -561,7 +561,7 @@ public class JsonTest {
         );
 
         assertEquals(
-            (Integer)1, 
+            (Integer)1,
             json.withoutTypeAdapter(Integer.class)
                 .fromJson("1", Integer.class)
         );

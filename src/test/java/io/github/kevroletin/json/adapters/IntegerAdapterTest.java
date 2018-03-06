@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class IntegerAdapterTest {
-    
+
     @Test
     public void testDeserialize() {
         Deserializer d = new Deserializer();
@@ -72,5 +72,5 @@ public class IntegerAdapterTest {
     @Test
     public void testSerialize() {
     }
-    
+
 }

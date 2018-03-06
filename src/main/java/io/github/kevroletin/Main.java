@@ -68,7 +68,7 @@ public class Main {
         );
 
         Result res = json.fromJsonNoThrow(
-            "[{\"badKey\": true}, {\"anotherBadKey\": false}]", 
+            "[{\"badKey\": true}, {\"anotherBadKey\": false}]",
             new TypeToken<List<Map<TelephoneNumber, Boolean>>>(){}.getType()
         );
         assert(

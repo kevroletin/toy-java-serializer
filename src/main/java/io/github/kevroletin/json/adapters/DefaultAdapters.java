@@ -20,7 +20,7 @@ public class DefaultAdapters {
         map.put(List.class,    new ListAdapter());
         map.put(Map.class,     new MapAdapter());
     }
-    
+
     public static Map<Class, TypeAdapter> getMap() {
         return map;
     }

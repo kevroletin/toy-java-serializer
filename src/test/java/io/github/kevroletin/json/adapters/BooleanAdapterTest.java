@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class BooleanAdapterTest {
-    
+
     @Test
     public void testDeserialize() {
         Deserializer d = new Deserializer();
@@ -38,5 +38,5 @@ public class BooleanAdapterTest {
     @Test
     public void testSerialize() {
     }
-    
+
 }

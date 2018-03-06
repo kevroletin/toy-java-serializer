@@ -58,5 +58,5 @@ public class IntegerNode implements INode {
         }
         return true;
     }
-    
+
 }

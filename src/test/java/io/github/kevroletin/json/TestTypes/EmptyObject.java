@@ -6,5 +6,5 @@ public class EmptyObject {
     public String toString() {
         return "EmptyObject{" + '}';
     }
-    
+
 }
