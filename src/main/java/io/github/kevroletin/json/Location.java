@@ -53,6 +53,14 @@ public class Location {
         return join("");
     }
 
+    public String toStringWith(String msgFrmt, Object... args) {
+        if (isNull()) {
+            return String.format(msgFrmt, args);
+        } else {
+            return (toString() + " " + String.format(msgFrmt, args));
+        }
+    }
+
     @Override
     public int hashCode() {
         int hash = 3;

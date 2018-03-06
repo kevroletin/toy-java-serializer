@@ -1,13 +1,21 @@
 package io.github.kevroletin.json.utils;
 
+import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TypeUtils {
     static public boolean isScalar(Object x) {
@@ -109,5 +117,29 @@ public class TypeUtils {
         Constructor<?> res = ctor.get();
         res.setAccessible(true);
         return ctor.get();
+    }
+
+    public static Class getClassFromTypeNoThrow(List<String> err, Location loc, Type type) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parType = (ParameterizedType)type;
+            try {
+                return Class.forName(parType.getRawType().getTypeName());
+            } catch (ClassNotFoundException ex) {
+                err.add(loc.toStringWith("Failed to convert %s type into class: %s", 
+                                         type.toString(), ex.getMessage()));
+                return null;
+            }
+        }
+        if (type instanceof GenericArrayType) {
+            assert(false);
+        }
+        if (type instanceof TypeVariable) {
+            assert(false);
+        }
+        if (type instanceof WildcardType) {
+            err.add("Can't turn ? into class");
+            return null;
+        }
+        return (Class) type;
     }
 }

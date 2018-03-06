@@ -6,6 +6,7 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -73,7 +74,7 @@ public class TypeAdapterTest {
     static class TelephoneNumberAdapter implements TypeAdapter<TelephoneNumber> {
 
         @Override
-        public Maybe<TelephoneNumber> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<TelephoneNumber> cls) {
+        public Maybe<TelephoneNumber> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Type type) {
             Result<String> res = d.deserialize(loc, ast, String.class);
             if (res.hasErrors()) {
                 err.addAll(res.getErrors());
@@ -189,7 +190,7 @@ public class TypeAdapterTest {
 
         @Override
         public Maybe<String> deserialize(
-            Deserializer d, List<String> err, Location loc, INode ast, Class<String> cls) 
+            Deserializer d, List<String> err, Location loc, INode ast, Type type) 
         {
             Maybe<String> str = new Deserializer().deserialize(err, loc, ast, String.class);
             if (str.isNothing()) {

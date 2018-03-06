@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import io.github.kevroletin.json.annotations.TypeAdapterFactory;
 import io.github.kevroletin.json.annotations.Adapter;
+import java.lang.reflect.Type;
 import java.util.Objects;
 
 public class Deserializer {
@@ -31,41 +32,62 @@ public class Deserializer {
 
     public <T> Result<T> deserialize(INode ast, Class<T> cls) {
         List<String> err = new ArrayList();
-        Maybe res = deserialize(err, Location.empty(), ast, cls);
+        Maybe<T> res = (Maybe<T>) deserializeIt(err, Location.empty(), ast, cls);
         return new Result(res, err);
     }
 
-    public <T> Result<T> deserialize(Location loc, INode ast, Class<T> cls) {
+    public Result<?> deserialize(INode ast, Type type) {
         List<String> err = new ArrayList();
-        Maybe res = deserialize(err, loc, ast, cls);
+        Maybe res = deserializeIt(err, Location.empty(), ast, type);
         return new Result(res, err);
     }
 
-    private TypeAdapter findAdapterInConfigs(Class cls) {
-        TypeAdapter adapter = config.typeAdapters.get(cls);
-        if (adapter != null) {
-            return adapter;
-        } else {
-            return DefaultAdapters.getMap().get(cls);
-        }
+    public <T> Result<T> deserialize(Location loc, INode ast, Type type) {
+        List<String> err = new ArrayList();
+        Maybe res = deserializeIt(err, loc, ast, type);
+        return new Result(res, err);
     }
 
     public <T> Maybe<T> deserialize(List<String> err, Location loc, INode ast, Class<T> cls) {
-        Adapter ann = cls.getAnnotation(Adapter.class);
-        if (ann != null) {
-            return deserializeUsingAdapterFactory(err, loc, ann.cls(), ast, cls);
-        }
-        TypeAdapter adapter = findAdapterInConfigs(cls);
-        if (adapter != null) {
-            return adapter.deserialize(this, err, loc, ast, cls);
+        return (Maybe<T>) deserializeIt(err, loc, ast, cls);
+    }
+
+    public <T> Maybe<T> deserializeWithoutTypeAdapters(List<String> err, Location loc, INode ast, Class<T> cls) {
+        return (Maybe<T>) deserializeWithoutTypeAdaptersIt(err, loc, ast, cls); 
+    }
+
+    private Maybe<?> deserializeWithoutTypeAdaptersIt(List<String> err, Location loc, INode ast, Type type) {
+        Class cls = TypeUtils.getClassFromTypeNoThrow(err, loc, type);
+        if (cls == null) {
+            return Maybe.nothing();
         }
         if (ast.isNull()) {
             return Maybe.just(null);
         }
-        if (TypeUtils.isArrayClass(cls)) {
-            return deserializeArray(err, loc, ast, cls);
+        TypeAdapter adapter = DefaultAdapters.getMap().get(cls);
+        if (adapter != null) {
+            return adapter.deserialize(this, err, loc, ast, type);
         }
-        return deserializeObject(err, loc, ast, cls);
+        if (TypeUtils.isArrayClass(cls)) {
+            return deserializeArray(err, loc, ast, type);
+        }
+        return deserializeObject(err, loc, ast, type);
+    }
+
+    private Maybe<?> deserializeIt(List<String> err, Location loc, INode ast, Type type) {
+        Class cls = TypeUtils.getClassFromTypeNoThrow(err, loc, type);
+        if (cls == null) {
+            return Maybe.nothing();
+        }
+        Adapter ann = (Adapter) cls.getAnnotation(Adapter.class);
+        if (ann != null) {
+            return deserializeUsingAdapterFactory(err, loc, ann.cls(), ast, type);
+        }
+        TypeAdapter adapter = config.typeAdapters.get(cls);
+        if (adapter != null) {
+            return adapter.deserialize(this, err, loc, ast, type);
+        }
+        return deserializeWithoutTypeAdaptersIt(err, loc, ast, type);
     }
 
     public Deserializer withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
@@ -82,11 +104,7 @@ public class Deserializer {
     }
 
     public void pushError(List<String> err, Location loc, String frmt, Object... args) {
-        if (loc.isNull()) {
-            err.add(String.format(frmt, args));
-        } else {
-            err.add(loc.toString() + " " + String.format(frmt, args));
-        }
+        err.add(loc.toStringWith(frmt, args));
     }
 
     public <T> boolean expectNode(List<String> err, Location loc, INode node, Class<T> expectedNodeCls) {
@@ -110,29 +128,30 @@ public class Deserializer {
         }
     }
 
-    public Map<String, INode> ensureNodeIsObject(List<String> err, Location loc, Class<?> cls, INode ast) {
+    public Map<String, INode> ensureNodeIsObject(List<String> err, Location loc, INode ast) {
         if (!ast.isObject()) {
-            pushError(err, loc, "Expected objet %s but got %s", 
-                      cls.getName(), ast.getClass().getName());
+            pushError(err, loc, "Expected object but got %s", ast.getClass().getName());
             return null;
         }
         return ((ObjectNode)ast).get();
     }
 
-    public List<INode> ensureNodeIsArray(List<String> err, Location loc, Class<?> cls, INode ast) {
+    public List<INode> ensureNodeIsArray(List<String> err, Location loc, INode ast) {
         if (!ast.isArray()) {
-            pushError(err, loc, "Expected array %s but got %s",
-                      cls.getName(), ast.getClass().getName());
+            pushError(err, loc, "Expected array but got %s", ast.getClass().getName());
             return null;
         }
         return ((ArrayNode)ast).get();
     }
 
-    public <T> Maybe<T> deserializeArray(List<String> err, Location arrLoc, INode ast, Class<T> arrCls) {
-        assert(arrCls.isArray());
+    public Maybe<?> deserializeArray(List<String> err, Location arrLoc, INode ast, Type type) {
+        Class<?> arrCls = TypeUtils.getClassFromTypeNoThrow(err, arrLoc, type);
+        if (arrCls == null) {
+            return Maybe.nothing();
+        }
         Class<?> elemCls = arrCls.getComponentType();
 
-        List<INode> astValues = ensureNodeIsArray(err, arrLoc, arrCls, ast);
+        List<INode> astValues = ensureNodeIsArray(err, arrLoc, ast);
         if (astValues == null) {
             return Maybe.nothing();
         }
@@ -141,7 +160,7 @@ public class Deserializer {
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
             Location valLoc = arrLoc.addIndex(i);
-            Maybe<?> val = deserialize(err, valLoc, valAst, elemCls);
+            Maybe<?> val = deserializeIt(err, valLoc, valAst, elemCls);
             if (!val.isJust()) {
                 continue;
             }
@@ -155,17 +174,17 @@ public class Deserializer {
                           val.get().getClass().getName());
             }
         }
-        return Maybe.just((T)res);
+        return Maybe.just(res);
     }
 
-    private <T> Maybe<T> deserializeUsingAdapterFactory(
-        List<String> err, Location loc, Class<? extends TypeAdapterFactory> factoryCls, INode ast, Class<T> cls) 
+    private Maybe<?> deserializeUsingAdapterFactory(
+        List<String> err, Location loc, Class<? extends TypeAdapterFactory> factoryCls, INode ast, Type type) 
     {
         if (factoryCls == null) {
             pushError(err, loc, "@Adapter.cls is null");
             return Maybe.nothing();
         }
-        TypeAdapterFactory<TypeAdapter<T>> factory;
+        TypeAdapterFactory<TypeAdapter<?>> factory;
         try {
             Constructor<?> ctor = TypeUtils.getDefaultConstructor(factoryCls);
             factory = (TypeAdapterFactory) ctor.newInstance();
@@ -174,30 +193,34 @@ public class Deserializer {
                       factoryCls.getName(), ex.getMessage());
             return Maybe.nothing();
         }
-        TypeAdapter<T> adapter = factory.create();
+        TypeAdapter<?> adapter = factory.create();
         if (adapter == null) {
             pushError(err, loc, "Adapter factory returned null");
             return Maybe.nothing();
         }
-        return adapter.deserialize(this, err, loc, ast, cls);
+        return adapter.deserialize(this, err, loc, ast, type);
     }
 
-    public <T> Maybe<T> deserializeConsideringAnnotation(
-        List<String> err, Location loc, Adapter fieldAdapter, INode ast, Class<T> cls) 
+    public Maybe<?> deserializeConsideringAnnotation(
+        List<String> err, Location loc, Adapter fieldAdapter, INode ast, Type type) 
     {
         if (fieldAdapter == null) {
-            return deserialize(err, loc, ast, cls);
+            return deserializeIt(err, loc, ast, type);
         } else {
-            return deserializeUsingAdapterFactory(err, loc, fieldAdapter.cls(), ast, cls);
+            return deserializeUsingAdapterFactory(err, loc, fieldAdapter.cls(), ast, type);
         }
     }
 
-    public <T> Maybe<T> deserializeObject(List<String> err, Location objLoc, INode ast, Class<T> objCls) {
-        T resObj = createEmptyInstance(err, objLoc, objCls);
+    public Maybe<?> deserializeObject(List<String> err, Location objLoc, INode ast, Type type) {
+        Class<?> objCls = TypeUtils.getClassFromTypeNoThrow(err, objLoc, type);
+        if (objCls == null) {
+            return Maybe.nothing();
+        }
+        Object resObj = createEmptyInstance(err, objLoc, objCls);
         if (resObj == null) {
             return Maybe.nothing();
         }
-        Map<String, INode> allValues = ensureNodeIsObject(err, objLoc, objCls, ast);
+        Map<String, INode> allValues = ensureNodeIsObject(err, objLoc, ast);
         if (allValues == null) {
             return Maybe.nothing();
         }
@@ -216,7 +239,7 @@ public class Deserializer {
             }
 
             Adapter ann = field.getAnnotation(Adapter.class);
-            Maybe<?> value = deserializeConsideringAnnotation(err, fieldLoc, ann, val, field.getType());
+            Maybe<?> value = deserializeConsideringAnnotation(err, fieldLoc, ann, val, field.getGenericType());
             if (value.isNothing()) {
                 continue;
             }

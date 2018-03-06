@@ -14,6 +14,7 @@ import io.github.kevroletin.json.TestTypes.PrivateField;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
@@ -529,7 +530,7 @@ public class JsonTest {
     class FailureTypeAdapter implements TypeAdapter {
 
         @Override
-        public Maybe deserialize(Deserializer d, List err, Location loc, INode ast, Class cls) {
+        public Maybe deserialize(Deserializer d, List err, Location loc, INode ast, Type type) {
             d.pushError(err, loc, "Test failure");
             return Maybe.nothing();
         }

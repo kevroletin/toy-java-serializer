@@ -5,6 +5,7 @@ import io.github.kevroletin.json.AST.StringNode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class StringAdapter extends BaseTypeAdapter<String> {
@@ -14,7 +15,7 @@ public class StringAdapter extends BaseTypeAdapter<String> {
     }
 
     @Override
-    public Maybe<String> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Class<String> cls) {
+    public Maybe<String> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Type type) {
         return Maybe.just(((StringNode)ast).get());
     }
 

@@ -7,6 +7,7 @@ import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.annotations.TypeAdapterFactory;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -16,7 +17,7 @@ public class TelephoneNumber {
     public static class TelephoneNumberAdapter implements TypeAdapter<TelephoneNumber> {
 
         @Override
-        public Maybe<TelephoneNumber> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Class<TelephoneNumber> cls) {
+        public Maybe<TelephoneNumber> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Type cls) {
             Maybe<String> res = d.deserialize(err, loc, ast, String.class);
             if (!res.isJust() || res.get() == null) {
                 return Maybe.nothing();
@@ -45,7 +46,7 @@ public class TelephoneNumber {
 
         @Override
         public Maybe<String> deserialize(
-            Deserializer d, List<String> err, Location loc, INode ast, Class<String> cls) 
+            Deserializer d, List<String> err, Location loc, INode ast, Type type) 
         {
             Maybe<String> str = d.withoutTypeAdapter(String.class).deserialize(err, loc, ast, String.class);
             if (str.isNothing()) {

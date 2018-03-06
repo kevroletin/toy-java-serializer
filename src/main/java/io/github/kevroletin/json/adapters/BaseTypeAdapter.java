@@ -5,6 +5,7 @@ import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.TypeAdapter;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public abstract class BaseTypeAdapter<T> implements TypeAdapter<T> {
@@ -16,10 +17,10 @@ public abstract class BaseTypeAdapter<T> implements TypeAdapter<T> {
 
     abstract protected Class getNodeType();
 
-    abstract protected Maybe<T> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Class<T> cls);
+    abstract protected Maybe<T> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Type type);
 
     @Override
-    public Maybe<T> deserialize(Deserializer d, List<String> errorsOut, Location loc, INode ast, Class<T> cls) {
+    public Maybe<T> deserialize(Deserializer d, List<String> errorsOut, Location loc, INode ast, Type type) {
         if (ast.isNull()) {
             if (canBeNull) {
                 return Maybe.just(null);
@@ -30,7 +31,7 @@ public abstract class BaseTypeAdapter<T> implements TypeAdapter<T> {
         if (!d.expectNode(errorsOut, loc, ast, this.getNodeType())) {
             return Maybe.nothing();
         }
-        return deserializeBody(d, errorsOut, loc, ast, cls);
+        return deserializeBody(d, errorsOut, loc, ast, type);
     }
 
 }

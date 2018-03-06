@@ -5,6 +5,7 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.utils.Maybe;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public class DoubleAdapter extends BaseTypeAdapter<Double> {
@@ -14,7 +15,7 @@ public class DoubleAdapter extends BaseTypeAdapter<Double> {
     }
 
     @Override
-    public Maybe<Double> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Class<Double> cls) {
+    public Maybe<Double> deserializeBody(Deserializer d, List<String> errorsOut, Location loc, INode ast, Type type) {
         if (!d.expectNode(errorsOut, loc, ast, DoubleNode.class)) {
             return Maybe.nothing();
         }
