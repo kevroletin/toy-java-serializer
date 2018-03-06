@@ -6,7 +6,6 @@ import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.TypeToken;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 import static org.junit.Assert.*;

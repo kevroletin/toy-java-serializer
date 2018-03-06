@@ -1,81 +1,42 @@
 package io.github.kevroletin.json.annotations;
 
 import io.github.kevroletin.Json;
-import io.github.kevroletin.json.AST.INode;
-import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.Result;
-import io.github.kevroletin.json.TypeAdapter;
+import io.github.kevroletin.json.ValueSanitizer;
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-class PositiveIntegerAdapter implements TypeAdapter<Integer> {
+class PositiveIntegerSanitizer implements ValueSanitizer<Integer> {
 
     @Override
-    public Maybe<Integer> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Type type) {
-        Maybe<Integer> res = d.deserialize(err, loc, ast, Integer.class);
-        if (res.isNothing()) {
+    public Maybe<Integer> sanitize(List<String> err, Location loc, Integer val) {
+        if (val == null || val <= 0) {
+            err.add(loc.toStringWith("Integer should be positive"));
             return Maybe.nothing();
         }
-        if (res.get() == null || res.get() <= 0) {
-            d.pushError(err, loc, "Integer should be positive");
-        }
-        return res;
+        return Maybe.just(val);
     }
 
 }
 
-class PositiveIntegerValidator implements TypeAdapterFactory<PositiveIntegerAdapter> {
+class PositiveIntegerValidator implements SanitizerFactory<PositiveIntegerSanitizer> {
 
     @Override
-    public PositiveIntegerAdapter create() {
-        return new PositiveIntegerAdapter();
+    public PositiveIntegerSanitizer create() {
+        return new PositiveIntegerSanitizer();
     }
 
 }
 
-class PointInCircleAdapter implements TypeAdapter<Point> {
-
-    int radius;
-
-    public PointInCircleAdapter(int radius) {
-        this.radius = radius;
-    }
-
-    @Override
-    public Maybe<Point> deserialize(Deserializer d, List<String> err, Location loc, INode ast, Type type) {
-        Maybe<Point> point = new Deserializer().deserializeWithoutTypeAdapters(err, loc, ast, Point.class);
-        if (point.isJust()) {
-            Integer x = point.get().x;
-            Integer y = point.get().y;
-            if (x == null || y == null || (x*x + y*y > radius*radius)) {
-                d.pushError(err, loc, "Point is not in circle of radious %d", radius);
-            }
-        }
-        return point;
-    }
-
-}
-
-class PointInCircle10Validator implements TypeAdapterFactory<PointInCircleAdapter> {
-
-    @Override
-    public PointInCircleAdapter create() {
-        return new PointInCircleAdapter(10);
-    }
-
-}
-
-@Adapter(cls = PointInCircle10Validator.class)
 class Point {
     public Integer x;
 
-    @Adapter(cls = PositiveIntegerValidator.class)
+    @Sanitizer(cls = PositiveIntegerValidator.class)
     public Integer y;
 
     public Point(Integer x, Integer y) {
@@ -137,12 +98,6 @@ public class AdapterAnnotationsTest {
         Result<Point> p = new Json().fromJsonNoThrow("{\"x\":1,\"y\":-1}", Point.class);
         assertTrue(p.hasErrors());
         assertTrue(p.getErrors().get(0).contains("Integer should be positive"));
-    }
-
-    @Test
-    public void testClassAnnotation() {
-        Result<Point> p = new Json().fromJsonNoThrow("{\"x\":100,\"y\":100}", Point.class);
-        assertTrue(p.hasErrors());
     }
     
 }

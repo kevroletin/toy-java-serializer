@@ -4,11 +4,13 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.TypeAdapter;
-import io.github.kevroletin.json.annotations.TypeAdapterFactory;
+import io.github.kevroletin.json.ValueSanitizer;
 import io.github.kevroletin.json.utils.Maybe;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
+import io.github.kevroletin.json.annotations.SanitizerFactory;
+import java.util.ArrayList;
 
 public class TelephoneNumber {
 
@@ -31,37 +33,21 @@ public class TelephoneNumber {
 
     }
 
-    public static class TelephoneNumberAdapterFactory implements TypeAdapterFactory<TelephoneNumberAdapter> {
+    public static class TelephoneAsStringSanitizer implements ValueSanitizer<String> {
 
         @Override
-        public TelephoneNumberAdapter create() {
-            return new TelephoneNumberAdapter();
+        public Maybe<String> sanitize(List<String> err, Location loc, String str) {
+            if (str == null) {
+                err.add(loc.toStringWith("Telephone number can't be null"));
+                return Maybe.nothing();
+            }
+
+            return TelephoneNumber.sanitize(err, loc, str);
         }
 
     }
 
-    public static class TelephoneAsStringSanitizer implements TypeAdapter<String> {
-
-        @Override
-        public Maybe<String> deserialize(
-            Deserializer d, List<String> err, Location loc, INode ast, Type type) 
-        {
-            Maybe<String> str = d.withoutTypeAdapter(String.class).deserialize(err, loc, ast, String.class);
-            if (str.isNothing()) {
-                return Maybe.nothing();
-            }
-
-            Maybe<String> res = TelephoneNumber.sanitize(str.get());
-            if (res.isNothing()) {
-                d.pushError(err, loc, "Invalid telephone number format");
-                return Maybe.nothing();
-            }
-            return res;
-        }
-
-    }
-
-    public static class TelephoneAsStringAdapterFactory implements TypeAdapterFactory<TelephoneAsStringSanitizer> {
+    public static class TelephoneAsStringSanitizerFactory implements SanitizerFactory<TelephoneAsStringSanitizer> {
 
         @Override
         public TelephoneAsStringSanitizer create() {
@@ -70,26 +56,28 @@ public class TelephoneNumber {
 
     }
 
-    public final String value;
-
-    public static Maybe<String> sanitize (String value) {
+    public static Maybe<String> sanitize(List<String> err, Location loc, String value) {
         String digits = 
             value.codePoints()
                     .filter(Character::isDigit)
                     .collect(StringBuilder::new,
-                            StringBuilder::appendCodePoint,
-                            StringBuilder::append )
+                             StringBuilder::appendCodePoint,
+                             StringBuilder::append)
                     .toString();
         if (digits.length() == 11) {
             return Maybe.just(digits);
         } else {
+            err.add(loc.toStringWith("Invalid telephone number format"));
             return Maybe.nothing();
         }
     }
 
+    public final String value;
+
     public TelephoneNumber(String value) {
-        this.value = sanitize(value).orElseThrow(() -> 
-            new RuntimeException("Invalid telephone number format")
+        List<String> err = new ArrayList();
+        this.value = sanitize(err, Location.empty(), value).orElseThrow(() -> 
+            new RuntimeException(String.join("; ", err))
         );
     }
 

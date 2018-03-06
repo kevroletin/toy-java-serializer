@@ -13,10 +13,10 @@ import java.util.Map;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.ArrayList;
 import java.util.Collections;
-import io.github.kevroletin.json.annotations.TypeAdapterFactory;
-import io.github.kevroletin.json.annotations.Adapter;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import io.github.kevroletin.json.annotations.SanitizerFactory;
+import io.github.kevroletin.json.annotations.Sanitizer;
 
 public class Deserializer {
 
@@ -56,42 +56,23 @@ public class Deserializer {
         return deserializeIt(err, loc, ast, type);
     }
 
-    public <T> Maybe<T> deserializeWithoutTypeAdapters(List<String> err, Location loc, INode ast, Class<T> cls) {
-        return (Maybe<T>) deserializeWithoutTypeAdaptersIt(err, loc, ast, cls); 
-    }
-
-    private Maybe<?> deserializeWithoutTypeAdaptersIt(List<String> err, Location loc, INode ast, Type type) {
+    private Maybe<?> deserializeIt(List<String> err, Location loc, INode ast, Type type) {
         Class cls = TypeUtils.getClassFromTypeNoThrow(err, loc, type);
-        if (cls == null) {
-            return Maybe.nothing();
+        TypeAdapter adapter = config.typeAdapters.get(cls);
+        if (adapter != null) {
+            return adapter.deserialize(this, err, loc, ast, type);
+        }
+        TypeAdapter defaultAdapter = DefaultAdapters.getMap().get(cls);
+        if (defaultAdapter != null) {
+            return defaultAdapter.deserialize(this, err, loc, ast, type);
         }
         if (ast.isNull()) {
             return Maybe.just(null);
-        }
-        TypeAdapter adapter = DefaultAdapters.getMap().get(cls);
-        if (adapter != null) {
-            return adapter.deserialize(this, err, loc, ast, type);
         }
         if (TypeUtils.isArrayClass(cls)) {
             return deserializeArray(err, loc, ast, type);
         }
         return deserializeObject(err, loc, ast, type);
-    }
-
-    private Maybe<?> deserializeIt(List<String> err, Location loc, INode ast, Type type) {
-        Class cls = TypeUtils.getClassFromTypeNoThrow(err, loc, type);
-        if (cls == null) {
-            return Maybe.nothing();
-        }
-        Adapter ann = (Adapter) cls.getAnnotation(Adapter.class);
-        if (ann != null) {
-            return deserializeUsingAdapterFactory(err, loc, ann.cls(), ast, type);
-        }
-        TypeAdapter adapter = config.typeAdapters.get(cls);
-        if (adapter != null) {
-            return adapter.deserialize(this, err, loc, ast, type);
-        }
-        return deserializeWithoutTypeAdaptersIt(err, loc, ast, type);
     }
 
     public Deserializer withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
@@ -148,7 +129,7 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
 
-    public Maybe<?> deserializeArray(List<String> err, Location arrLoc, INode ast, Type type) {
+    private Maybe<?> deserializeArray(List<String> err, Location arrLoc, INode ast, Type type) {
         Class<?> arrCls = TypeUtils.getClassFromTypeNoThrow(err, arrLoc, type);
         if (arrCls == null) {
             return Maybe.nothing();
@@ -181,41 +162,31 @@ public class Deserializer {
         return Maybe.just(res);
     }
 
-    private Maybe<?> deserializeUsingAdapterFactory(
-        List<String> err, Location loc, Class<? extends TypeAdapterFactory> factoryCls, INode ast, Type type) 
+    private <T> Maybe<T> sanitize(
+        List<String> err, Location loc, Class<? extends SanitizerFactory> factoryCls, T value) 
     {
         if (factoryCls == null) {
             pushError(err, loc, "@Adapter.cls is null");
             return Maybe.nothing();
         }
-        TypeAdapterFactory<TypeAdapter<?>> factory;
+        SanitizerFactory<ValueSanitizer<T>> factory;
         try {
             Constructor<?> ctor = TypeUtils.getDefaultConstructor(factoryCls);
-            factory = (TypeAdapterFactory) ctor.newInstance();
+            factory = (SanitizerFactory) ctor.newInstance();
         } catch (Exception ex) {
             pushError(err, loc, "Failed to instantiate TypeAdapter usring %s: %s",
                       factoryCls.getName(), ex.getMessage());
             return Maybe.nothing();
         }
-        TypeAdapter<?> adapter = factory.create();
-        if (adapter == null) {
-            pushError(err, loc, "Adapter factory returned null");
+        ValueSanitizer<T> sanitizer = factory.create();
+        if (sanitizer == null) {
+            pushError(err, loc, "Sanitizer factory returned null");
             return Maybe.nothing();
         }
-        return adapter.deserialize(this, err, loc, ast, type);
+        return sanitizer.sanitize(err, loc, value);
     }
 
-    public Maybe<?> deserializeConsideringAnnotation(
-        List<String> err, Location loc, Adapter fieldAdapter, INode ast, Type type) 
-    {
-        if (fieldAdapter == null) {
-            return deserializeIt(err, loc, ast, type);
-        } else {
-            return deserializeUsingAdapterFactory(err, loc, fieldAdapter.cls(), ast, type);
-        }
-    }
-
-    public Maybe<?> deserializeObject(List<String> err, Location objLoc, INode ast, Type type) {
+    private Maybe<?> deserializeObject(List<String> err, Location objLoc, INode ast, Type type) {
         Class<?> objCls = TypeUtils.getClassFromTypeNoThrow(err, objLoc, type);
         if (objCls == null) {
             return Maybe.nothing();
@@ -242,10 +213,16 @@ public class Deserializer {
                 continue;
             }
 
-            Adapter ann = field.getAnnotation(Adapter.class);
-            Maybe<?> value = deserializeConsideringAnnotation(err, fieldLoc, ann, val, field.getGenericType());
+            Maybe<?> value = deserializeIt(err, fieldLoc, val, field.getGenericType());
             if (value.isNothing()) {
                 continue;
+            }
+            Sanitizer ann = field.getAnnotation(Sanitizer.class);
+            if (ann != null) {
+                value = sanitize(err, objLoc, ann.cls(), value.get());
+                if (value.isNothing()) {
+                    continue;
+                }
             }
 
             try {

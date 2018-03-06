@@ -18,6 +18,9 @@ public class MapAdapter implements TypeAdapter<Map> {
 
     @Override
     public Maybe<Map> deserialize(Deserializer d, List<String> err, Location mapLoc, INode ast, Type type) {
+        if (ast.isNull()) {
+            return Maybe.just(null);
+        }
         Class<?> arrCls = TypeUtils.getClassFromTypeNoThrow(err, mapLoc, type);
         if (arrCls == null) {
             return Maybe.nothing();

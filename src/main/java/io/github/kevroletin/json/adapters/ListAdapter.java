@@ -14,6 +14,9 @@ public class ListAdapter implements TypeAdapter<List> {
 
     @Override
     public Maybe<List> deserialize(Deserializer d, List<String> err, Location arrLoc, INode ast, Type type) {
+        if (ast.isNull()) {
+            return Maybe.just(null);
+        }
         Type elemType = TypeUtils.getGenericParameterTypeNoThrow(err, arrLoc, 0, type);
         if (elemType == null) {
             return Maybe.nothing();
