@@ -4,7 +4,6 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.Result;
-import io.github.kevroletin.json.Serializer;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
 import io.github.kevroletin.json.TestTypes.EmptyObject;
@@ -17,7 +16,6 @@ import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.utils.Maybe;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Ignore;
@@ -427,11 +425,53 @@ public class JsonTest {
 
     static class UnboxedField {
         int value;
+
+        public UnboxedField(int value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return "UnboxedField{" + "value=" + value + '}';
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 53 * hash + this.value;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final UnboxedField other = (UnboxedField) obj;
+            if (this.value != other.value) {
+                return false;
+            }
+            return true;
+        }
     }
 
-    @Test(expected = DeserializationException.class)
     public void testUnboxedField() throws Exception {
-        new Json().toJson(new Json().fromJson("{\"value\": 10}", UnboxedField.class));
+        assertEquals(
+            new UnboxedField(10),
+            new Json().toJson(new Json().fromJson("{\"value\": 10}", UnboxedField.class))
+        );
+    }
+
+    public void testUnboxedFieldNull() throws Exception {
+        assertTrue(
+            new Json().fromJsonNoThrow("{\"value\": null}", UnboxedField.class).hasErrors()
+        );
     }
 
     static class Father {
