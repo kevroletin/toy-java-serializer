@@ -1,10 +1,10 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.testHelpers.ScalarNode;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.ScalarNode;
 import io.github.kevroletin.json.TestTypes.BooleanWrapper;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.IntegerWrapper;
@@ -25,8 +25,8 @@ public class DeserializerTest {
     @Test
     public void testDeserializeObjectPoint() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
-        m.put("x", new ScalarNode(1.0));
-        m.put("y", new ScalarNode(2.0));
+        m.put("x", ScalarNode.create(1.0));
+        m.put("y", ScalarNode.create(2.0));
 
         assertEquals(
             new Point(1.0, 2.0),
@@ -37,7 +37,7 @@ public class DeserializerTest {
     @Test
     public void testDeserializeObjectWithInteger() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
-        m.put("value", new ScalarNode(1));
+        m.put("value", ScalarNode.create(1));
 
         assertEquals(
             new IntegerWrapper(1),
@@ -48,7 +48,7 @@ public class DeserializerTest {
     @Test
     public void testDeserializeObjectWithString() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
-        m.put("value", new ScalarNode("hello"));
+        m.put("value", ScalarNode.create("hello"));
 
         assertEquals(
             new StringWrapper("hello"),
@@ -59,7 +59,7 @@ public class DeserializerTest {
     @Test
     public void testDeserializeObjectWithBoolean() throws DeserializationException {
         Map<String, INode> m = new HashMap<>();
-        m.put("value", new ScalarNode(true));
+        m.put("value", ScalarNode.create(true));
 
         assertEquals(
             new BooleanWrapper(true),
@@ -83,33 +83,33 @@ public class DeserializerTest {
     public void testDeserializeScalar() throws DeserializationException {
         assertEquals(
             (Integer)1,
-            new Deserializer().deserialize(new ScalarNode(1), Integer.class).get()
+            new Deserializer().deserialize(ScalarNode.create(1), Integer.class).get()
         );
 
         assertEquals(
             "hello",
-            new Deserializer().deserialize(new ScalarNode("hello"), String.class).get()
+            new Deserializer().deserialize(ScalarNode.create("hello"), String.class).get()
         );
 
         assertEquals(
             true,
-            new Deserializer().deserialize(new ScalarNode(true), Boolean.class).get()
+            new Deserializer().deserialize(ScalarNode.create(true), Boolean.class).get()
         );
     }
 
     @Test
     public void testDeserializeScalarWrongType() throws DeserializationException {
-        Result<Integer> res = new Deserializer().deserialize(new ScalarNode(true), Integer.class);
+        Result<Integer> res = new Deserializer().deserialize(ScalarNode.create(true), Integer.class);
         assertTrue(res.hasErrors());
-        assertTrue(res.getErrors().get(0).contains("Expected java.lang.Integer but got java.lang.Boolean"));
+        assertTrue(res.getErrors().get(0).contains("Expected java.lang.Integer but got"));
     }
 
     @Test
     public void testDeserializeArrayOfScalars() throws DeserializationException {
         INode ir = new ArrayNode(Arrays.asList(
-            new ScalarNode(1),
-            new ScalarNode(2),
-            new ScalarNode(3)
+            ScalarNode.create(1),
+            ScalarNode.create(2),
+            ScalarNode.create(3)
         ));
         Integer[] arr = {1, 2, 3};
         assertArrayEquals(
@@ -244,7 +244,7 @@ public class DeserializerTest {
     @Test
     public void testDeserializeNestedObjects() throws DeserializationException {
         Map<String, INode> mInner = new HashMap();
-        mInner.put("value", new ScalarNode("secret"));
+        mInner.put("value", ScalarNode.create("secret"));
         Map<String, INode> mOuter = new HashMap();
         mOuter.put("value", new ObjectNode(mInner));
         INode ir = new ObjectNode(mOuter);

@@ -78,8 +78,23 @@ public class Serializer {
         if (TypeUtils.isUnsupportedScalar(x)) {
             throwUnsupportedClass(x.getClass());
         }
+        if (x == null) {
+            return NullNode.getInstance();
+        }
         if (TypeUtils.isSupportedScalar(x)) {
-            return new ScalarNode(x);
+            // TODO: move into type adapters
+            if (TypeUtils.isInteger(x)) {
+                return new IntegerNode(String.valueOf(x));
+            }
+            else if (TypeUtils.isDouble(x)) {
+                return new DoubleNode(String.valueOf(x));
+            }
+            else if (TypeUtils.isBoolean(x)) {
+                return new BooleanNode((Boolean)x);
+            }
+            else if (TypeUtils.isString(x)) {
+                return new StringNode((String)x); 
+            }
         }
         if (TypeUtils.isArray(x)) {
             return serializeArray(x, visited);

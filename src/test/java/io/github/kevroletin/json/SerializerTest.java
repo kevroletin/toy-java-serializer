@@ -1,10 +1,10 @@
 package io.github.kevroletin.json;
 
+import io.github.kevroletin.json.testHelpers.ScalarNode;
 import io.github.kevroletin.json.exceptions.SerializationException;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.ScalarNode;
 import io.github.kevroletin.json.TestTypes.IntCons;
 import io.github.kevroletin.json.TestTypes.Point;
 import io.github.kevroletin.json.TestTypes.GenericWrapper;
@@ -23,42 +23,42 @@ public class SerializerTest {
         assertEquals(
             Serializer.serialize(strArr),
             new ArrayNode(Arrays.asList(
-                new ScalarNode("hello"),
-                new ScalarNode("world")))
+                ScalarNode.create("hello"),
+                ScalarNode.create("world")))
         );
         
         int[] intArr = {1, 2, 3};
         assertEquals(
             Serializer.serialize(intArr),
             new ArrayNode(Arrays.asList(
-                new ScalarNode(1),
-                new ScalarNode(2),
-                new ScalarNode(3)))
+                ScalarNode.create(1),
+                ScalarNode.create(2),
+                ScalarNode.create(3)))
         );
         
         double[] doubleArr = {1.0, 2.0, 3.0};
         assertEquals(
             Serializer.serialize(doubleArr),
             new ArrayNode(Arrays.asList(
-                              new ScalarNode(1.0),
-                              new ScalarNode(2.0),
-                              new ScalarNode(3.0)))
+                              ScalarNode.create(1.0),
+                              ScalarNode.create(2.0),
+                              ScalarNode.create(3.0)))
             );
 
         boolean[] booleanArr = {true, false};
         assertEquals(
             Serializer.serialize(booleanArr),
             new ArrayNode(Arrays.asList(
-                new ScalarNode(true),
-                new ScalarNode(false)))
+                ScalarNode.create(true),
+                ScalarNode.create(false)))
         );
 
         Object[] nullArr = {null, null};
         assertEquals(
             Serializer.serialize(nullArr),
             new ArrayNode(Arrays.asList(
-                new ScalarNode(null),
-                new ScalarNode(null)))
+                ScalarNode.create(null),
+                ScalarNode.create(null)))
         );
         
         Object[] emptyArr = {};
@@ -77,8 +77,8 @@ public class SerializerTest {
     @Test
     public void testSerializeObjectPoint() throws Exception {
         Map<String, INode> m = new HashMap<>();
-        m.put("x", new ScalarNode(1.0));
-        m.put("y", new ScalarNode(2.0));
+        m.put("x", ScalarNode.create(1.0));
+        m.put("y", ScalarNode.create(2.0));
         assertEquals(
             new ObjectNode(m),
             Serializer.serialize(new Point(1.0, 2.0))
@@ -88,8 +88,8 @@ public class SerializerTest {
     @Test
     public void testSerializeObjectPointWithNull() throws Exception {
         Map<String, INode> m = new HashMap<>();
-        m.put("x", new ScalarNode(1.0));
-        m.put("y", new ScalarNode(null));
+        m.put("x", ScalarNode.create(1.0));
+        m.put("y", ScalarNode.create(null));
         assertEquals(
             new ObjectNode(m),
             Serializer.serialize(new Point(1.0, null))
@@ -113,7 +113,7 @@ public class SerializerTest {
         GenericWrapper<String> val = new GenericWrapper("Secret");
         
         Map<String, INode> m = new HashMap<>();
-        m.put("value", new ScalarNode("Secret"));
+        m.put("value", ScalarNode.create("Secret"));
 
         assertEquals(
             new ObjectNode(m),
@@ -133,7 +133,7 @@ public class SerializerTest {
     @Test
     public void testSerializeToJsonInteger() throws Exception {
         assertEquals(
-            new ScalarNode(1),
+            ScalarNode.create(1),
             Serializer.serialize(1)
         );
     }
@@ -153,9 +153,9 @@ public class SerializerTest {
         int[] arr = {1, 2, 3};
         assertEquals(
             new ArrayNode(Arrays.asList(
-                new ScalarNode(1),
-                new ScalarNode(2),
-                new ScalarNode(3)
+                ScalarNode.create(1),
+                ScalarNode.create(2),
+                ScalarNode.create(3)
             )),
             Serializer.serialize(arr)
         );
@@ -164,8 +164,8 @@ public class SerializerTest {
     @org.junit.Test
     public void testSerializeToJsonObject() throws Exception {
         Map<String, INode> m = new HashMap<>();
-        m.put("x", new ScalarNode(1.0));
-        m.put("y", new ScalarNode(2.0));
+        m.put("x", ScalarNode.create(1.0));
+        m.put("y", ScalarNode.create(2.0));
         assertEquals(
             new ObjectNode(m),
             Serializer.serialize(new Point(1.0, 2.0))

@@ -1,8 +1,9 @@
 package io.github.kevroletin.json.TestTypes;
 
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.ScalarNode;
 import io.github.kevroletin.json.AST.INode;
+import io.github.kevroletin.json.AST.NullNode;
+import io.github.kevroletin.json.testHelpers.ScalarNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,11 +16,11 @@ public class IntCons {
         List<Integer> list = new ArrayList(fromList);
         Collections.reverse(list);
 
-        INode prev = new ScalarNode(null);
+        INode prev = NullNode.getInstance();
         for (Integer i: list) {
             Map<String, INode> m = new HashMap();
             m.put("next", prev);
-            m.put("value", new ScalarNode(i));
+            m.put("value", ScalarNode.create(i));
             prev = new ObjectNode(m);
         }
 

@@ -1,11 +1,5 @@
 package io.github.kevroletin.json.AST;
 
-/** INode - intermediate representation for parsed Json
- *
- * All scalar types, booleans and null are represented by the same Scalar Node
- * type. This is trade off between type safety of amount of code which looks 
- * like a sweet spot.
- */
 public interface INode {
     default boolean isArray() { return false; }
 
@@ -39,5 +33,7 @@ public interface INode {
         return buff.toString();
     }
 
-    void toPrettyJson(int offset, StringBuffer res);
+    default void toPrettyJson(int offset, StringBuffer res) {
+        toJson(res);
+    }
 }

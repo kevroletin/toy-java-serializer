@@ -2,8 +2,12 @@ package io.github.kevroletin.json;
 
 import io.github.kevroletin.json.utils.TypeUtils;
 import io.github.kevroletin.json.AST.ArrayNode;
+import io.github.kevroletin.json.AST.BooleanNode;
+import io.github.kevroletin.json.AST.DoubleNode;
 import io.github.kevroletin.json.AST.INode;
+import io.github.kevroletin.json.AST.IntegerNode;
 import io.github.kevroletin.json.AST.ObjectNode;
+import io.github.kevroletin.json.AST.StringNode;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -91,14 +95,6 @@ public class Deserializer {
         }
     }
 
-    public boolean checkClassEquals(List<String> err, Location loc, Class<?> lhs, Class<?> rhs) {
-        if (!lhs.equals(rhs)) {
-            pushError(err, loc, "Expected %s but got %s", lhs.getName(), rhs.getName());
-            return false;
-        }
-        return true;
-    }
-
     public Map<String, INode> ensureNodeIsObject(List<String> err, Location loc, Class<?> cls, INode ast) {
         if (!ast.isObject()) {
             pushError(err, loc, "Expected objet %s but got %s", 
@@ -126,8 +122,22 @@ public class Deserializer {
             return Maybe.just(null);
         } else {
             assert(TypeUtils.isSupportedScalarClass(cls));
-            T res = (T) value.getUnsafe();
-            if (!checkClassEquals(err, loc, cls, res.getClass())) {
+            T res = null;
+            // TODO: move into type adapters
+            if (cls == Integer.class && value.isInteger()) {
+                res = (T) Integer.valueOf(((IntegerNode)value).get());
+            }
+            else if (cls == Double.class && value.isDouble()) {
+                res = (T) Double.valueOf(((DoubleNode)value).get());
+            }
+            else if (cls == Boolean.class && value.isBoolean()) {
+                res = (T) (Boolean)((BooleanNode)value).get();
+            }
+            else if (cls == String.class && value.isString()) {
+                res = (T) ((StringNode)value).get();
+            } else {
+                pushError(err, loc, "Expected %s but got %s node", cls.getName(), 
+                          value.getClass().getName());
                 return Maybe.nothing();
             }
             return Maybe.just(res);

@@ -2,7 +2,7 @@ package io.github.kevroletin.json.TestTypes;
 
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.ScalarNode;
+import io.github.kevroletin.json.AST.StringNode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -12,7 +12,7 @@ public class StringWrapper {
 
     public static INode astNode(String value) {
         Map<String, INode> m = new HashMap();
-        m.put("value", new ScalarNode(value));
+        m.put("value", new StringNode(value));
         return new ObjectNode(m);
     }
 

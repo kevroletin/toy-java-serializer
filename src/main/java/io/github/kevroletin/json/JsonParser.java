@@ -2,9 +2,13 @@ package io.github.kevroletin.json;
 
 import io.github.kevroletin.json.exceptions.JsonParsingException;
 import io.github.kevroletin.json.AST.ArrayNode;
+import io.github.kevroletin.json.AST.BooleanNode;
+import io.github.kevroletin.json.AST.DoubleNode;
 import io.github.kevroletin.json.AST.INode;
+import io.github.kevroletin.json.AST.IntegerNode;
+import io.github.kevroletin.json.AST.NullNode;
 import io.github.kevroletin.json.AST.ObjectNode;
-import io.github.kevroletin.json.AST.ScalarNode;
+import io.github.kevroletin.json.AST.StringNode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -153,8 +157,8 @@ public class JsonParser {
      * - no support for escaped unicode characters
      * - error message could be improved
      */
-    private ScalarNode parseString() throws JsonParsingException {
-        return new ScalarNode(eatString());
+    private StringNode parseString() throws JsonParsingException {
+        return new StringNode(eatString());
     }    
 
     private String eatInt() throws JsonParsingException {
@@ -180,10 +184,6 @@ public class JsonParser {
         }
     }
 
-    private ScalarNode parseInt() throws JsonParsingException {
-        return new ScalarNode( Integer.parseInt(eatInt()) );
-    }
-
     private <T> Optional<T> tryParse(Parser<T> f) {
         StringInputSeq.StateGuard sp = in.savePoint();
         try {
@@ -202,23 +202,16 @@ public class JsonParser {
         return res.toString();
     }
     
-    private ScalarNode parseNumber() throws JsonParsingException {
+    private INode parseNumber() throws JsonParsingException {
         String intPart = eatInt();
         Optional<String> fracPart = tryParse(this::eatFrac);
         Optional<String> expPart = tryParse(this::eatExp);
 
         if (!fracPart.isPresent() && !expPart.isPresent()) {
-            try {
-                return new ScalarNode(Integer.parseInt(intPart));
-            } 
-            catch (NumberFormatException ex) {
-                throw new JsonParsingException(
-                    String.format("Number %s is too big to be represented as an Integer", intPart)
-                );
-            }
+            return new IntegerNode(intPart);
         } else {
             String str = intPart + fracPart.orElse("") + expPart.orElse("");
-            return new ScalarNode(Double.parseDouble(str));
+            return new DoubleNode(str);
         }
     }
 
@@ -245,18 +238,18 @@ public class JsonParser {
         return String.valueOf(e) + sign + digits;
     }
 
-    private ScalarNode parseBoolean() throws JsonParsingException {
+    private BooleanNode parseBoolean() throws JsonParsingException {
         Optional<Boolean> res = tryParse(() -> { expect("true"); return true; });
         if (!res.isPresent()) {
             res = tryParse(() -> { expect("false"); return false; });
         }
-        return new ScalarNode(
+        return new BooleanNode(
             res.orElseThrow(() -> new JsonParsingException("Failed to parse atom"))
         );
     }
 
-    private ScalarNode parseScalar() throws JsonParsingException {
-        Optional<ScalarNode> res = tryParse(this::parseString);
+    private INode parseScalar() throws JsonParsingException {
+        Optional<INode> res = tryParse(this::parseString);
         if (!res.isPresent()) {
             res = tryParse(this::parseNumber); 
         }
@@ -264,7 +257,7 @@ public class JsonParser {
             res = tryParse(this::parseBoolean); 
         }
         if (!res.isPresent()) {
-            res = tryParse(() -> { expect("null"); return new ScalarNode(null); });
+            res = tryParse(() -> { expect("null"); return NullNode.getInstance(); });
         }
         return res.orElseThrow(() -> new JsonParsingException("Failed to parse scalar"));
     }

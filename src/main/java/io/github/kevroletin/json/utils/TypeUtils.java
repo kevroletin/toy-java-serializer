@@ -19,7 +19,7 @@ public class TypeUtils {
     }
     
     static public boolean isSupportedScalar(Object x) {
-        return x == null || isSupportedScalarClass(x.getClass());
+        return isSupportedScalarClass(x.getClass());
     }
 
     static public boolean isSupportedScalarClass(Class<?> cls) {
