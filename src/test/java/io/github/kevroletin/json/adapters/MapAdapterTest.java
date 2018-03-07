@@ -50,18 +50,18 @@ public class MapAdapterTest {
 
         Map<TelephoneNumber, Boolean> m1 = new HashMap();
         m1.put(new TelephoneNumber("71234567890"), true);
-        m1.put(new TelephoneNumber("00000000000"), false);
+        m1.put(new TelephoneNumber("70000000000"), false);
 
         assertEquals(
             m1,
             json.fromJson(
-                "{\"71234567890\": true, \"00000000000\": false}",
+                "{\"71234567890\": true, \"70000000000\": false}",
                 new TypeToken<Map<TelephoneNumber, Boolean>>() {}.getType())
         );
 
         assertTrue(
             json.fromJsonNoThrow(
-                "{\"bad\": true, \"00000000000\": false}",
+                "{\"bad\": true, \"70000000000\": false}",
                 new TypeToken<Map<TelephoneNumber, Boolean>>() {}.getType()
             ).hasErrors()
         );

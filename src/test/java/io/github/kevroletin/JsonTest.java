@@ -4,6 +4,7 @@ import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.Deserializer;
 import io.github.kevroletin.json.Location;
 import io.github.kevroletin.json.Result;
+import io.github.kevroletin.json.TestTypes.AcceptanceTest;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.TestTypes.AllSupportedTypesWrapper;
 import io.github.kevroletin.json.TestTypes.EmptyObject;
@@ -23,7 +24,32 @@ import org.junit.Ignore;
 
 public class JsonTest {
 
-    public JsonTest() {
+    @Test
+    public void acceptanceTest() throws JsonParsingException, DeserializationException {
+        Json json = new JsonBuilder()
+                    .typeAdapter(TelephoneNumber.class, new TelephoneNumber.TelephoneNumberAdapter())
+                    .build();
+
+        assertEquals(
+            new AcceptanceTest(123, "asd", "79502885623"),
+            json.fromJson(
+                "{\"foo\": 123, \"bar\": \"asd\", \"baz\": \"8 (950) 288-56-23\"}", 
+                AcceptanceTest.class
+            )
+        );
+
+        assertTrue(
+            json.fromJsonNoThrow("123абв", Integer.class).hasErrors()
+        );
+
+        assertTrue(
+            json.fromJsonNoThrow("260557", TelephoneNumber.class).hasErrors()
+        );
+
+        assertEquals(
+            new TelephoneNumber("79502885623"),
+            json.fromJson("\"8 (950) 288-56-23\"", TelephoneNumber.class)
+        );
     }
 
     @Test
@@ -44,7 +70,7 @@ public class JsonTest {
     }
 
     @Test
-    public void testJsonArray() {
+    public void testJsonArrayWithErrors() {
         Result<Boolean[]> res = new Json().fromJsonNoThrow("[1, true, 3]", Boolean[].class);
         assertEquals(
             Arrays.asList(

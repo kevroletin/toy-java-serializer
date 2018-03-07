@@ -19,7 +19,12 @@ public class JsonParser {
 
     static public INode parse(String string) throws JsonParsingException {
         JsonParser parser = new JsonParser(string);
-        return parser.parseInternal();
+        INode res = parser.parseInternal();
+        parser.skipSpaces();
+        if (!parser.in.isEmpty()) {
+            throw new JsonParsingException("Trailing input");
+        }
+        return res;
     }
 
     static class StringInputSeq {

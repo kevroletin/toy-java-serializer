@@ -30,8 +30,6 @@ class User1 {
 public class Main {
 
     static public void main(String[] args) throws JsonException {
-        int[] arr = new int[] {};
-        System.out.println( arr.getClass() );
 
         Json json = new JsonBuilder()
                     .typeAdapter(TelephoneNumber.class, new TelephoneNumber.TelephoneNumberAdapter())
@@ -44,14 +42,14 @@ public class Main {
 
         Type genericType = new TypeToken<Map<TelephoneNumber, Boolean>>(){}.getType();
         System.out.println(json.fromJson(
-            "{\"71234567890\": true, \"00000000000\": false}",
+            "{\"71234567890\": true, \"70000000000\": false}",
             genericType
         ));
 
         System.out.println(json.fromJson(
               "{ \"typesafeNumber\": \"71234567890\""
             + ", \"strNumber\": \"81234567890\""
-            + ", \"blacklist\": {\"71234567890\": true, \"00000000000\": false}"
+            + ", \"blacklist\": {\"71234567890\": true, \"70000000000\": false}"
             + "}",
             User1.class
         ));
@@ -70,14 +68,14 @@ public class Main {
             ).hasErrors()
         );
 
-        Result res = json.fromJsonNoThrow(
+        Result<?> res = json.fromJsonNoThrow(
             "[{\"badKey\": true}, {\"anotherBadKey\": false}]",
             new TypeToken<List<Map<TelephoneNumber, Boolean>>>(){}.getType()
         );
         assert(
             res.getErrors().equals(Arrays.asList(
-                "[0]{badKey} Invalid telephone number format",
-                "[1]{anotherBadKey} Invalid telephone number format"
+               "[0]{badKey} Invalid telephone number format: expecting 11 digits",
+               "[1]{anotherBadKey} Invalid telephone number format: expecting 11 digits"
             ))
         );
     }

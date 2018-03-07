@@ -65,9 +65,15 @@ public class TelephoneNumber {
                              StringBuilder::append)
                     .toString();
         if (digits.length() == 11) {
-            return Maybe.just(digits);
+            if (digits.charAt(0) == '7') {
+                return Maybe.just(digits);
+            } else if (digits.charAt(0) == '8') {
+                return Maybe.just(digits.replaceFirst("8", "7"));
+            }
+            err.add(loc.toStringWith("Invalid telephone number format: first digit should be 7 or 8"));
+            return Maybe.nothing();
         } else {
-            err.add(loc.toStringWith("Invalid telephone number format"));
+            err.add(loc.toStringWith("Invalid telephone number format: expecting 11 digits"));
             return Maybe.nothing();
         }
     }
