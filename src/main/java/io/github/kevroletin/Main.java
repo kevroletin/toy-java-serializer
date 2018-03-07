@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-class User1 {
+class User {
 
     public TelephoneNumber typesafeNumber;
 
@@ -18,7 +18,7 @@ class User1 {
 
     public Map<TelephoneNumber, Boolean> blacklist;
 
-    public User1() {}
+    public User() {}
 
     @Override
     public String toString() {
@@ -35,9 +35,8 @@ public class Main {
                     .typeAdapter(TelephoneNumber.class, new TelephoneNumber.TelephoneNumberAdapter())
                     .build();
 
-        System.out.println(json.fromJson(
-            "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"81234567890\", \"blacklist\": null}",
-            User1.class
+        System.out.println(json.fromJson("{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"81234567890\", \"blacklist\": null}",
+            User.class
         ));
 
         Type genericType = new TypeToken<Map<TelephoneNumber, Boolean>>(){}.getType();
@@ -46,25 +45,22 @@ public class Main {
             genericType
         ));
 
-        System.out.println(json.fromJson(
-              "{ \"typesafeNumber\": \"71234567890\""
+        System.out.println(json.fromJson("{ \"typesafeNumber\": \"71234567890\""
             + ", \"strNumber\": \"81234567890\""
             + ", \"blacklist\": {\"71234567890\": true, \"70000000000\": false}"
             + "}",
-            User1.class
+            User.class
         ));
 
         assert(
-            json.fromJsonNoThrow(
-                "{\"typesafeNumber\": \"bad\", \"strNumber\": \"81234567890\", \"blacklist\": null}",
-                User1.class
+            json.fromJsonNoThrow("{\"typesafeNumber\": \"bad\", \"strNumber\": \"81234567890\", \"blacklist\": null}",
+                User.class
             ).hasErrors()
         );
 
         assert(
-            json.fromJsonNoThrow(
-                "{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"bad\", \"blacklist\": null}",
-                User1.class
+            json.fromJsonNoThrow("{\"typesafeNumber\": \"71234567890\", \"strNumber\": \"bad\", \"blacklist\": null}",
+                User.class
             ).hasErrors()
         );
 
