@@ -12,8 +12,8 @@ There are also `Sanitizer` annotation.
 
 + No 3rd party libraries, pure Java.
 + Field sanitization via annotations.
-+ Capable to process types defined in 3rd party libraries.
-+ Returns list of all errors.
++ Capable of process types defined in 3rd party libraries.
++ Returns a list of all errors.
 
 ## Current progress
 
@@ -21,13 +21,13 @@ Serializer doesn't support extensions via type adapters yet.
 
 ## Sanitization
 
-It is feature to restrict set of allowed values. Sanitization similar to
-validation but in some cases sanitizer can turn invalid value into some allowed
+It is a feature to restrict set of allowed values. Sanitization similar to
+validation but in some cases, sanitizer can turn invalid value into some allowed
 "canonical" representation. A good example is a phone number. In some contexts
-8(4232)1-23-45 and 12345 can refer to a same phone number and clearly it's good
-idea to canonicalize then before usage.
+8(4232)1-23-45 and 12345 can refer to the same phone number and clearly, it's a
+good idea to canonicalize then before usage.
 
-The are two approaches for sanitization. First one is via fields annotations
+There are two approaches for sanitization. First one is via fields annotations
 like this:
 
     class User {
@@ -36,7 +36,7 @@ like this:
         public String strNumber;
         ...
 
-And second one is via defining separate type and then registering corresponding
+And the second one is via defining a separate type and then registering corresponding
 `TypeAdapter` like this.
 
     class User {
@@ -50,11 +50,12 @@ And second one is via defining separate type and then registering corresponding
                 .build();
 
 A call such approach with a separate type a "type safe". One should add
-validation into constructor of TelephoneNumber. So any time you meet
-TelephoneNumber in your program - you can be sure it contains valid
-representation of it's value.
+validation into the constructor of TelephoneNumber. So anytime you meet
+TelephoneNumber in your program - you can be sure it contains a valid
+representation of its value.
 
-That second approach also allows using TelephoneNumber as a key in dictionary like this:
+That second approach also allows using TelephoneNumber as a key in the
+dictionary like this:
 
         json.fromJson(
             "{\"71234567890\": true, \"70000000000\": false}",
@@ -66,20 +67,20 @@ Boolean>>(){}.getType();`.
 
 ## Restrictions and behavior details 
 
-+ Ther are restrictions for deserializable object:
++ Ther are restrictions for a serializable object:
 
   + Class should implement public default constructor *(constructor with no
-    arguments)*, otherwise serializer will not be able to create object of that
-    class.
+    arguments)*, otherwise serializer will not be able to create an object of
+    that class.
 
   + Fields should be public.
 
-+ Missed field in Json object is treated as error during serialization.
+ + Missed fields in JSON object are treated as an error during serialization.
 
-+ Nulls are placed into resulting json during serialization.
++ Nulls are placed into resulting JSON during serialization.
 
 ## TODOs
 
 + TypeAdapters for serializer.
 + Skip fields via annotations.
-+ Allow missed fields in Json input via fields annotations.
++ Allow missed fields in JSON input via fields annotations.
