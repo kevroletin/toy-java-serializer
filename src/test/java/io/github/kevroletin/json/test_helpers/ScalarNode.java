@@ -1,4 +1,4 @@
-package io.github.kevroletin.json.testHelpers;
+package io.github.kevroletin.json.test_helpers;
 
 import io.github.kevroletin.json.AST.BooleanNode;
 import io.github.kevroletin.json.AST.DoubleNode;

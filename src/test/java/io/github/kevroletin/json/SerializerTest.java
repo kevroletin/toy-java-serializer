@@ -1,6 +1,6 @@
 package io.github.kevroletin.json;
 
-import io.github.kevroletin.json.testHelpers.ScalarNode;
+import io.github.kevroletin.json.test_helpers.ScalarNode;
 import io.github.kevroletin.json.exceptions.SerializationException;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;

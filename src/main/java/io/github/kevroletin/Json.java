@@ -20,9 +20,7 @@ public class Json {
     final Config config;
 
     public Json() {
-        this.config = new Config();
-        this.deserializer = new Deserializer(this.config);
-        this.serializer = new Serializer(this.config);
+        this(new Config());
     }
 
     public Json(Config config) {
@@ -73,7 +71,6 @@ public class Json {
         return new Json(config.withTypeAdapter(cls, adapter));
     }
 
-    // Unable to delete default deserializers
     public Json withoutTypeAdapter(Class<?> cls) {
         return new Json(config.withoutTypeAdapter(cls));
     }

@@ -30,33 +30,43 @@ public class Deserializer {
         config = new Config();
     }
 
+    public Deserializer withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
+        return new Deserializer(config.withTypeAdapter(cls, adapter));
+    }
+
+    public Deserializer withoutTypeAdapter(Class<?> cls) {
+        return new Deserializer(config.withoutTypeAdapter(cls));
+    }
+
+    public Config getConfig() {
+        return config;
+    }
+
     public <T> Result<T> deserialize(INode ast, Class<T> cls) {
-        List<String> err = new ArrayList();
-        Maybe<T> res = (Maybe<T>) deserializeIt(err, Location.empty(), ast, cls);
-        return new Result(res, err);
+        return (Result<T>) Deserializer.this.deserialize(ast, (Type)cls);
     }
 
     public Result<?> deserialize(INode ast, Type type) {
         List<String> err = new ArrayList();
-        Maybe res = deserializeIt(err, Location.empty(), ast, type);
+        Maybe res = deserialize(err, Location.empty(), ast, type);
         return new Result(res, err);
+    }
+
+    public <T> Result<T> deserialize(Location loc, INode ast, Class<T> cls) {
+        return Deserializer.this.deserialize(loc, ast, (Type)cls);
     }
 
     public <T> Result<T> deserialize(Location loc, INode ast, Type type) {
         List<String> err = new ArrayList();
-        Maybe res = deserializeIt(err, loc, ast, type);
+        Maybe res = deserialize(err, loc, ast, type);
         return new Result(res, err);
     }
 
     public <T> Maybe<T> deserialize(List<String> err, Location loc, INode ast, Class<T> cls) {
-        return (Maybe<T>) deserializeIt(err, loc, ast, cls);
+        return (Maybe<T>) deserialize(err, loc, ast, (Type)cls);
     }
 
     public Maybe deserialize(List<String> err, Location loc, INode ast, Type type) {
-        return deserializeIt(err, loc, ast, type);
-    }
-
-    private Maybe<?> deserializeIt(List<String> err, Location loc, INode ast, Type type) {
         Class cls = TypeUtils.getClassFromTypeNoThrow(err, loc, type);
         TypeAdapter adapter = config.typeAdapters.get(cls);
         if (adapter != null) {
@@ -75,24 +85,11 @@ public class Deserializer {
         return deserializeObject(err, loc, ast, type);
     }
 
-    public Deserializer withTypeAdapter(Class<?> cls, TypeAdapter<?> adapter) {
-        return new Deserializer(config.withTypeAdapter(cls, adapter));
-    }
-
-    // Unable to delete default deserializers
-    public Deserializer withoutTypeAdapter(Class<?> cls) {
-        return new Deserializer(config.withoutTypeAdapter(cls));
-    }
-
-    public Config getConfig() {
-        return config;
-    }
-
     public void pushError(List<String> err, Location loc, String frmt, Object... args) {
         err.add(loc.toStringWith(frmt, args));
     }
 
-    public <T> boolean expectNode(List<String> err, Location loc, INode node, Class<T> expectedNodeCls) {
+    public boolean expectNode(List<String> err, Location loc, INode node, Class<?> expectedNodeCls) {
         if (!node.getClass().equals(expectedNodeCls)) {
             pushError(err, loc, "Expecting node %s but got %s",
                       expectedNodeCls.getName(), node.getClass().getName());
@@ -129,7 +126,7 @@ public class Deserializer {
         return ((ArrayNode)ast).get();
     }
 
-    private Maybe<?> deserializeArray(List<String> err, Location arrLoc, INode ast, Type type) {
+    private Maybe deserializeArray(List<String> err, Location arrLoc, INode ast, Type type) {
         Class<?> arrCls = TypeUtils.getClassFromTypeNoThrow(err, arrLoc, type);
         if (arrCls == null) {
             return Maybe.nothing();
@@ -152,7 +149,7 @@ public class Deserializer {
         for (int i = 0; i < astValues.size(); ++i) {
             INode valAst = astValues.get(i);
             Location valLoc = arrLoc.addIndex(i);
-            Maybe<?> val = deserializeIt(err, valLoc, valAst, elemType);
+            Maybe<?> val = deserialize(err, valLoc, valAst, elemType);
             if (!val.isJust()) {
                 continue;
             }
@@ -173,7 +170,7 @@ public class Deserializer {
         List<String> err, Location loc, Class<? extends SanitizerFactory> factoryCls, T value)
     {
         if (factoryCls == null) {
-            pushError(err, loc, "@Adapter.cls is null");
+            pushError(err, loc, "@Sanitizer.cls is null");
             return Maybe.nothing();
         }
         SanitizerFactory<ValueSanitizer<T>> factory;
@@ -181,7 +178,7 @@ public class Deserializer {
             Constructor<?> ctor = TypeUtils.getDefaultConstructor(factoryCls);
             factory = (SanitizerFactory) ctor.newInstance();
         } catch (Exception ex) {
-            pushError(err, loc, "Failed to instantiate TypeAdapter usring %s: %s",
+            pushError(err, loc, "Failed to instantiate Sanitizer usring %s: %s",
                       factoryCls.getName(), ex.getMessage());
             return Maybe.nothing();
         }
@@ -193,7 +190,37 @@ public class Deserializer {
         return sanitizer.sanitize(err, loc, value);
     }
 
-    private Maybe<?> deserializeObject(List<String> err, Location objLoc, INode ast, Type type) {
+    private void deserealizeAndAssignField(
+        List<String> err, Location fieldLoc, Object resObj, Field field, INode val)
+    {
+        String name = field.getName();
+        // TODO: how about configurable nullable fields?
+        if (val == null) {
+            pushError(err, fieldLoc, "%s field is missed in serialized AST", name);
+            return;
+        }
+
+        Maybe<?> value = deserialize(err, fieldLoc, val, field.getGenericType());
+        if (value.isNothing()) {
+            return;
+        }
+        Sanitizer ann = field.getAnnotation(Sanitizer.class);
+        if (ann != null) {
+            value = sanitize(err, fieldLoc, ann.cls(), value.get());
+            if (value.isNothing()) {
+                return;
+            }
+        }
+
+        try {
+            field.setAccessible(true);
+            field.set(resObj, value.get());
+        } catch (IllegalAccessException | IllegalArgumentException e) {
+            pushError(err, fieldLoc, "Failed to set value: %s", e.getMessage());
+        }
+    }
+
+    private Maybe deserializeObject(List<String> err, Location objLoc, INode ast, Type type) {
         Class<?> objCls = TypeUtils.getClassFromTypeNoThrow(err, objLoc, type);
         if (objCls == null) {
             return Maybe.nothing();
@@ -214,31 +241,7 @@ public class Deserializer {
             String name = field.getName();
             INode val = allValues.get(name);
             Location fieldLoc = objLoc.addField(name);
-            // TODO: how about configurable nullable fields?
-            if (val == null) {
-                pushError(err, fieldLoc, "%s field is missed in serialized AST", name);
-                continue;
-            }
-
-            Maybe<?> value = deserializeIt(err, fieldLoc, val, field.getGenericType());
-            if (value.isNothing()) {
-                continue;
-            }
-            Sanitizer ann = field.getAnnotation(Sanitizer.class);
-            if (ann != null) {
-                value = sanitize(err, objLoc, ann.cls(), value.get());
-                if (value.isNothing()) {
-                    continue;
-                }
-            }
-
-            try {
-                field.setAccessible(true);
-                field.set(resObj, value.get());
-            } catch (IllegalAccessException | IllegalArgumentException e) {
-                pushError(err, fieldLoc, "Failed to set value: epected type %s but got %s",
-                          field.getType().getName(), value.get().getClass().getName());
-            }
+            deserealizeAndAssignField(err, fieldLoc, resObj, field, val);
         }
         return Maybe.just(resObj);
     }

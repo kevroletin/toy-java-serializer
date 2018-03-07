@@ -1,6 +1,6 @@
 package io.github.kevroletin.json;
 
-import io.github.kevroletin.json.testHelpers.ScalarNode;
+import io.github.kevroletin.json.test_helpers.ScalarNode;
 import io.github.kevroletin.json.exceptions.DeserializationException;
 import io.github.kevroletin.json.AST.ArrayNode;
 import io.github.kevroletin.json.AST.INode;
@@ -65,18 +65,6 @@ public class DeserializerTest {
             new BooleanWrapper(true),
             new Deserializer().deserialize(new ObjectNode(m), BooleanWrapper.class).get()
         );
-    }
-
-    @Ignore
-    public void testDeserializeObjectWithArray() {
-    }
-
-    @Ignore
-    public void testDeserializeObjectWithList() {
-    }
-
-    @Ignore
-    public void testDeserializeObjectWithOtherObjects() {
     }
 
     @Test

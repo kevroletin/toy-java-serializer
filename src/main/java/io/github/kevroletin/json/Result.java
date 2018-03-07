@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
+/** Result - container which can hold both value and list of errors at the same time.
+ * 
+ * Presence of errors doesn't prevent one from getting the value (if the value is present). In that
+ * sense it's *not* like Either class which can hold either value either error.
+ */
 public class Result<T> {
     private final boolean hasValue;
 

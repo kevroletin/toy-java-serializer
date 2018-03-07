@@ -429,6 +429,8 @@ public class JsonTest {
     static class UnboxedField {
         int value;
 
+        public UnboxedField() {}
+
         public UnboxedField(int value) {
             this.value = value;
         }
@@ -464,13 +466,15 @@ public class JsonTest {
         }
     }
 
+    @Test
     public void testUnboxedField() throws Exception {
         assertEquals(
             new UnboxedField(10),
-            new Json().toJson(new Json().fromJson("{\"value\": 10}", UnboxedField.class))
+            new Json().fromJson("{\"value\": 10}", UnboxedField.class)
         );
     }
 
+    @Test
     public void testUnboxedFieldNull() throws Exception {
         assertTrue(
             new Json().fromJsonNoThrow("{\"value\": null}", UnboxedField.class).hasErrors()

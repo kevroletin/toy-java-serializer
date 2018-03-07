@@ -25,6 +25,7 @@ public abstract class BaseTypeAdapter<T> implements TypeAdapter<T> {
             if (canBeNull) {
                 return Maybe.just(null);
             } else {
+                d.pushError(errorsOut, loc, "Can't be null");
                 return Maybe.nothing();
             }
         }

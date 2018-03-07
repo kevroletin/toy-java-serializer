@@ -9,7 +9,6 @@ import io.github.kevroletin.json.utils.Maybe;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -236,10 +235,8 @@ public class TypeAdapterTest {
             json.fromJsonNoThrow("{\"number\": \"wrong\"}", UserWithNumber.class).hasErrors()
         );
 
-// TODO:
-//        assertEquals(
-//            Arrays.asList("{number} Expected java.lang.String but got"),
-//            json.fromJsonNoThrow("{\"number\": 123}", UserWithNumber.class).getErrors()
-//        );
+        assertTrue(
+            json.fromJsonNoThrow("{\"number\": 123}", UserWithNumber.class).hasErrors()
+        );
     }
 }

@@ -41,7 +41,7 @@ public class TypeUtils {
     }
 
     static public boolean isUnsupportedScalarClass(Class<?> cls) {
-        // We don't support fields which are not nullable for simplicity
+        // TODO: move serializer to type adapters and remove this code
         if (cls.isPrimitive()) {
             return true;
         }
@@ -76,7 +76,7 @@ public class TypeUtils {
         return cls.isArray();
     }
 
-    /** Due to inheritance we need to recursively scan super classes to find all
+    /* Due to inheritance we need to recursively scan super classes to find all
      * fields
      */
     public static List<Field> getAllFields(Class<?> cls) {
@@ -99,10 +99,10 @@ public class TypeUtils {
         return allFields;
     }
 
-    /** This approach works better than class.newInstance because here we can
+    /* This approach works better than class.newInstance because here we can
      * call ctor.setAccessible(true) which prevents some access forbidden errors.
      */
-    public static Constructor<?> getDefaultConstructor(Class<?> cls) throws DeserializationException {
+    public static Constructor getDefaultConstructor(Class<?> cls) throws DeserializationException {
         Optional<Constructor<?>> ctor =
             Arrays.stream(cls.getDeclaredConstructors())
             .filter((x) -> {

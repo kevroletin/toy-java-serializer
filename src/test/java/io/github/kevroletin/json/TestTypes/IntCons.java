@@ -3,7 +3,7 @@ package io.github.kevroletin.json.TestTypes;
 import io.github.kevroletin.json.AST.ObjectNode;
 import io.github.kevroletin.json.AST.INode;
 import io.github.kevroletin.json.AST.NullNode;
-import io.github.kevroletin.json.testHelpers.ScalarNode;
+import io.github.kevroletin.json.test_helpers.ScalarNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
